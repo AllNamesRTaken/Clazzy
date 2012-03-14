@@ -1,0 +1,18 @@
+{
+    "name": "Clazzy",
+    "version": "1.0",
+    "main": "Clazzy",
+    "dependencies": {
+    },
+    "description": "Clazzy gives you classful javascript and an IoC container.",
+    "licenses": [
+        {
+            "type": "MIT",
+            "url": "http://www.opensource.org/licenses/MIT"
+        }
+    ],
+    "bugs": "none",
+    "keywords": ["JavaScript", "Classful", "IoC"],
+    "homepage": "hemsida",
+    "dojoBuild": "app.profile.js"
+}
