@@ -36,8 +36,8 @@ myObject.is "someInterface2" # -> true
 myObject.isnt "a banana" # -> true
 myObject.set "myProperty1", 42 # -> property is set
 myObject.set "nonExistingProperty", 666 # -> throws Error
-myObject.set "myProperty1" # -> returns 42
-myObject.set "nonExistingProperty" # -> throws Error
+myObject.get "myProperty1" # -> returns 42
+myObject.get "nonExistingProperty" # -> throws Error
 myObject.myFunc1() # -> awesomeness
 ```
 
