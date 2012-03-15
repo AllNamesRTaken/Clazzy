@@ -81,14 +81,16 @@ define [
 
     Class = (classname, inheritance, interfaces = [], jsonObject = {}) -> 
         throw new Exception("TypeException", "Inheritance can not be an Array") if inheritance instanceof Array
-        throw new Exception("TypeException", "Interfaces must be an Array or null/undefined") if interfaces and not interfaces instanceof Array
+        throw new Exception("TypeException", "Interfaces must be an Array or null/undefined") if interfaces and not (interfaces instanceof Array)
         root = window;
         if !inheritance 
             parentClass = BaseClass
         else if "function" is typeof inheritance 
             parentClass = inheritance
         else 
-            parentClass = root[inheritance]
+            parentClass = root
+            for part in inheritance.split(".")
+                parentClass = parentClass[part]
         (jsonObject.constructor = () ->) if not jsonObject.hasOwnProperty('constructor')
 
         #-----------------------------------------------
