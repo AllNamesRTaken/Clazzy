@@ -13,7 +13,7 @@ define [
   "some/path/MyBaseClass" 
   "some/path/MyMixin" 
 ], (Class, MyMixin) ->
-  Class "some.other.path.MyClass, MyBaseClass, ["someInterface1", "someInterface2", MyMixin], 
+  Class "some.other.path.MyClass", MyBaseClass, ["someInterface1", "someInterface2", MyMixin], 
     constructor: () ->
       @.myProperty1 = 1
       @.myProperty2 = 2
