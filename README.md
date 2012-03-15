@@ -42,3 +42,24 @@ myObject.myFunc1() # -> awesomeness
 ```
 
 Sweet! But why the setters and getters? Well they let us jack in and observe when the function is called and what was set or get using e.g. dojos aspect module since it is now a function and not a javascript object property.
+
+IoC
+--- 
+Using the IoC module only requiers you to after required the module simply call the get(Interfacename, optionalPropertyObject) function.
+You also need the mappings to be registered. See the Registrar.
+
+```coffeescript
+require [
+    "clazzy/IoC"
+    "clazzy/config/Registrar"
+], (IoC, Registrar) ->
+    IoC.get("IMyRegisteredInterface", {SomeProperty: "value", SomeOtherProperty: "stuff"})
+```
+
+The IoC module knows the dependencies of a class by reading its __dependencies property if available.
+this property should be an array containing the names of the interfaces to inject for. The injected instance will be a property on the object with the same name as the interface. So for 
+´´´
+__dependencies: ["IMyFoo"]
+´´´
+the object will have the property this.IMyFoo
+This means that if you want more than one instance of a class injected, you have to make a factory.
