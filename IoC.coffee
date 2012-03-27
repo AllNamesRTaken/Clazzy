@@ -50,39 +50,61 @@ define [
             _store[classname] = instance if _singeltons[classname]
             instance
 		
+        #function to look up all depencencies for a class
+        #as well as register it as required
+        registerRequired: (classnames, classes) -> 
+            dependencies = []
+            for i in [0..classes.length-1]
+                _store[classnames[i]] = classes[i]
+                dependencies = @getDependencies classnames[i]
+                dependencies = dependencies.concat @getTemplateDependencies tRegistry.get tLocator.findTemplate classnames[i] if tLocator.hasTemplate classnames[i]
+                if dependencies.length is 0 
+                    _required[classnames[i]].resolve()
+                else
+                    count = i
+                    @require(dependencies)
+                    .then () -> 
+                        _required[classnames[count]].resolve()
+                        undefined
+            return
+
         # Require, registerDep, getDep, filterDep, and convertToAmdModuleNames
         # is used for the require phase and asynch, using deferred to communicate when done.
         # finding all dependecies is done using width first
-
         # require returns Deferred or DeferredList
         require: (classnames) ->
-            toBeRequired = lang.filter classnames, (classname) ->
+            notRequired = lang.filter classnames, (classname) ->
                 return not _required[classname]
-            beingRequired = lang.filter classnames, (classname) ->
-                return _required[classname]?
+            toBeRequired = []
+            namesToBeRegistered = []
+            classesToBeRegistered = []
+            inProcess = lang.filter classnames, (classname) ->
+                return not not _required[classname]
+            #split up notRequired between existing defined classes and those that we need to require
+            for classname, i in notRequired
+                if cls = lib.findClass(classname)
+                    namesToBeRegistered.push classname
+                    classesToBeRegistered.push cls
+                else
+                    toBeRequired.push classname
 
-            deferreds = (_required[classname] for classname in beingRequired)
+            deferreds = (_required[classname] for classname in inProcess)
             if deferreds.length>0
                 deferreds.push @require toBeRequired if toBeRequired.length>0 
                 return lib.deferList(deferreds)
             
-            deferredList = lib.deferList((_required[classname] = new Deferred()) for classname in toBeRequired)
-            
-            modules = @convertToAmdModuleNames toBeRequired
-            require modules, lang.hitch this, (classes...) ->
-                dependencies = []
-                for i in [0..classes.length-1]
-                    _store[classnames[i]] = classes[i]
-                    dependencies = @getDependencies classnames[i]
-                    if dependencies.length is 0 
-                        _required[classnames[i]].resolve()
-                    else
-                        count = i
-                        @require(dependencies)
-                        .then () -> 
-                            _required[classnames[count]].resolve()
-                            undefined
-                return
+            deferredList = lib.deferList((_required[classname] = new Deferred()) for classname in notRequired)
+
+            #register and look up their dependencies for all classes that
+            #are not required but still seem to be defines allready
+            @registerRequired.call(this, namesToBeRegistered, classesToBeRegistered) if namesToBeRegistered.length
+
+            #require all dependencies that are neither defined nor required
+            if toBeRequired.length
+                modules = @convertToAmdModuleNames toBeRequired
+                require modules, lang.hitch this, (classes...) ->
+                    names = toBeRequired
+                    @registerRequired.call(this, names, classes)
             
             deferredList
         
@@ -100,6 +122,13 @@ define [
             classes = (locator.findClass dep for dep in interfaces)
             return @registerDependencies classname, classes, interfaces
 
+        getTemplateDependencies: (template) ->
+            deps = []
+            re = /data-dojo-type="(.*?)"/gi
+            while match = re.exec(template)
+                deps.push match[1]
+            deps
+
         convertToAmdModuleNames: (classnames) ->
             modules = (classname.replace(/\./g, "/") for classname in classnames)
             modules
@@ -109,8 +138,6 @@ define [
             locator.register interfacename, classname, config
             if ((found = lib.findClass classname) and not _store[classname])
                 _store[classname] = found 
-                _required[classname] = new Deferred()
-                _required[classname].resolve()
             _singeltons[classname] = singelton is true
             _allvalues[config or [locator.getConfig()]][classname] = values if values?
         
@@ -131,6 +158,13 @@ define [
 
         setConfig: (config) ->
             locator.setConfigTo config
+
+            _alldependencies[config] = {} if not _alldependencies[config]?
+            _allstores[config] = {} if not _allstores[config]?
+            _allvalues[config] = {} if not _allvalues[config]?
+            _allsingeltons[config] = {} if not _allsingeltons[config]?
+            _allrequired[config] = {} if not _allrequired[config]?
+
             _dependencies = _alldependencies[config]
             _store = _allstores[config]
             _values = _allvalues[config]

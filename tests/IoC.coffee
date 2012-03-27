@@ -13,20 +13,27 @@ define [
 
     registerTemplate = (templateid, classname, templatestring, config) ->
         templateNameLocator.register templateid, classname, config
-        templateRegistry.register templateid, templatestring, config
+        templateRegistry.register templateid, templatestring, config 
 
-    doh.register "clazzy.tests.IoC", [
+    doh.register "clazzy.tests.IoC", [ 
         name: "SETUP"
         setUp: () ->
             #Arrange
             Class "tests.SingelDummy"
             Class "tests.NormalDummy"
+            Class "tests.NormalDummyWithDeps", null, null, 
+                __dependencies: ["IHelper1"]
+                constructor: () ->
+            Class "tests.NormalDummyWithDepsInTemplate", null, null, 
+                __dependencies: []
+                constructor: () ->
             ioc.setConfig "default"
             ioc.register "ISingelton", "tests.SingelDummy", true
             ioc.register "INormal", "tests.NormalDummy", false
             ioc.register "IHelper1", "clazzy.tests.helpers.Helper1", false
             ioc.register "IHelper2", "clazzy.tests.helpers.Helper2", false
             registerTemplate "THelper2", "clazzy.tests.helpers.Helper2", cache new _url("../../../../lib/clazzy/tests/helpers/HelperTemplate.html")
+            registerTemplate "DepsTemplate", "tests.NormalDummyWithDepsInTemplate", cache new _url("../../../../lib/clazzy/tests/helpers/DepsTemplate.html")
         runTest: (t) -> 
             #Act
             doh.assertTrue true
@@ -97,6 +104,18 @@ define [
         tearDown: () ->
             ioc.setConfig @originalConfigName
     ,
+        name: "getByClass_ExistingNotRequiredClassWithNotRequiredDependencies_instanceWithDependencies"
+        setUp: () ->
+            #Arrange
+        runTest: (t) -> 
+            d = new doh.Deferred()
+            #Act
+            ioc.getByClass("tests.NormalDummyWithDeps").then d.getTestCallback lang.hitch this, (instance) -> 
+                #Assert
+                doh.assertEqual "tests.NormalDummyWithDeps", instance.declaredClass
+                doh.assertEqual "clazzy.tests.helpers.Helper1", instance.IHelper1.declaredClass
+            d
+    ,
         name: "get_notRequiredClassWithDependencies_instanceWithDependencies"
         setUp: () ->
             #Arrange
@@ -107,6 +126,18 @@ define [
                 #Assert
                 doh.assertEqual "clazzy.tests.helpers.Helper2", instance.declaredClass
                 doh.assertEqual "clazzy.tests.helpers.Helper1", instance.getHelper1().declaredClass
+            d
+    ,
+        name: "get_ExistingNotRequiredClassWithDependeciesInTemplate_dependenciesAreRequired"
+        setUp: () ->
+            #Arrange
+        runTest: (t) -> 
+            d = new doh.Deferred()
+            #Act
+            doh.assertFalse not not clazzy.tests.helpers.Helper3
+            ioc.getByClass("tests.NormalDummyWithDepsInTemplate").then d.getTestCallback lang.hitch this, (instance) -> 
+                #Assert
+                doh.assertTrue not not clazzy.tests.helpers.Helper3
             d
 
     ]

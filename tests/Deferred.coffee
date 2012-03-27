@@ -21,6 +21,21 @@ define [
             @deferred.resolve(@data)
             d
     ,
+        name: "resolve_data_thenOfPromiseIsCalledWithData"
+        setUp: () ->
+            #Arrange
+            @deferred = new Deferred()
+            @data = 1
+        runTest: (t) -> 
+            #Act
+            d = new doh.Deferred()
+            promise = @deferred.then d.getTestCallback (data) -> 
+            promise.then d.getTestCallback (data) -> 
+                #Assert
+                doh.assertEqual 1, data
+            @deferred.resolve(@data)
+            d
+    ,
         name: "reject_exception_errbackIsCalledWithErrorValue"
         runTest: (t) -> 
             #Arrange

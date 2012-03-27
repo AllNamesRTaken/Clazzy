@@ -30,6 +30,26 @@ define [
         tearDown: () -> 
             templateNameLocator.setConfigTo "default"
     ,
+        name: "configExists_existingConfig_true"
+        setUp: () ->
+            #Arrange
+            @configName = "default"
+        runTest: (t) -> 
+            #Act
+            #Assert
+            doh.assertTrue templateNameLocator.configExists @configName
+        tearDown: () -> 
+    ,
+        name: "configExists_notExistingConfig_true"
+        setUp: () ->
+            #Arrange
+            @configName = "nonExistingConfigName"
+        runTest: (t) -> 
+            #Act
+            #Assert
+            doh.assertFalse templateNameLocator.configExists @configName
+        tearDown: () -> 
+    ,
         name: "register_newTemplateNameAndClassName_noError"
         setUp: () ->
             #Arrange

@@ -35,6 +35,26 @@ define [
         tearDown: () ->
             nameLocator.clear()
     ,
+        name: "configExists_existingConfig_true"
+        setUp: () ->
+            #Arrange
+            @configName = "default"
+        runTest: (t) -> 
+            #Act
+            #Assert
+            doh.assertTrue nameLocator.configExists @configName
+        tearDown: () -> 
+    ,
+        name: "configExists_notExistingConfig_true"
+        setUp: () ->
+            #Arrange
+            @configName = "nonExistingConfigName"
+        runTest: (t) -> 
+            #Act
+            #Assert
+            doh.assertFalse nameLocator.configExists @configName
+        tearDown: () -> 
+    ,
         name: "register_existingSourceNameAndTargetName_throws"
         setUp: () ->
             #Arrange
