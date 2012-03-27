@@ -3,6 +3,9 @@ define [
 ], (NameLocator) ->
     namelocator = new NameLocator()
     TemplateNameLocator = 
+        configExists: (config) ->
+            namelocator.configExists(config or namelocator.config)
+
         getConfig: () -> 
             namelocator.config
         

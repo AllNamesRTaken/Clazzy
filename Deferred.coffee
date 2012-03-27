@@ -94,7 +94,7 @@ define [
                 returnDeferred = this
             else 
                 returnDeferred = new clazzy.Deferred()
-                returnDeferred.canceller = @promise.cancel
+                returnDeferred.canceller = @cancel
             listener = 
                 resolved: resolvedCallback,
                 error: errorCallback,

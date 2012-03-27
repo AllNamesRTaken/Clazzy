@@ -20,19 +20,23 @@ define [
             @setConfigTo _DEFAULT
             this
 
+        configExists: (configname) ->
+            if @_allsources[configname]? then true else false
+
         initConfig: (configname) -> 
-            return if @_allsources[configname]
+            return if @configExists(configname)
             @_allsources[configname] = {}
             @_alltargets[configname] = {}
 
         setConfigTo: (configname) ->
             @config = configname
+            @initConfig(configname)
             @_sources = @_allsources[@config]
             @_targets = @_alltargets[@config]
 
         register: (sourceName, targetName, config = @config) ->
-            @initConfig(config)
-            throw new Exception("RegisterException", sourceName + ", " + targetName + " combination already registered in config '" + (config || _DEFAULT) + "'") if @_sources[targetName] or @_targets[sourceName]
+            @initConfig(config);
+            throw new Exception("RegisterException", sourceName + ", " + targetName + " combination already registered in config '" + (config || _DEFAULT) + "'") if @_allsources[config][targetName] or @_alltargets[config][sourceName]
             @_allsources[config][targetName] = sourceName
             @_alltargets[config][sourceName] = targetName
 
