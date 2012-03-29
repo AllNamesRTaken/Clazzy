@@ -52,6 +52,7 @@ define [
     "clazzy/abstraction/Lang" #used only for the clone functionality, replace if you want
     "clazzy/Exception" #super basic class
 ], (_lang, Exception) ->
+    #Taken shamelessly from MDN
     unless Array::indexOf
         Array::indexOf = (searchElement) ->
             "use strict"
@@ -71,7 +72,7 @@ define [
                 return k    if k of t and t[k] is searchElement
                 k++
             -1
-
+    #The class all other classes inherit from.
     class BaseClass
         declaredClass: "BaseClass"
         _implements: () -> []
@@ -82,13 +83,17 @@ define [
             @_watchers = (prop, oldValue, newValue, index, self) ->
                 if callbacks = @_watchers[key = '_' + prop]?.slice()
                     for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + name) if not callback.call?
+                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
+                        callback.call(this, prop, oldValue, newValue, index, self)
+                if callbacks = @_watchers['*']
+                    for callback in callbacks
+                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
                         callback.call(this, prop, oldValue, newValue, index, self)
                 this
             @_validators = (prop, oldValue, newValue, index, self) ->
                 if callbacks = @_validators[key = '_' + prop]?.slice()
                     for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + name) if not callback.call?
+                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
                         return callback.call(this, prop, oldValue, newValue, index, self)
                 0
             this
@@ -114,7 +119,7 @@ define [
             throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + this.declaredClass) if this[prop] is undefined
             this[prop]
         watch: (prop, callback) ->
-            key = '_' + prop
+            key = if prop isnt '*' then '_' + prop else prop
             callbacks = @_watchers[key]
             callbacks = @_watchers[key] = [] if typeof callbacks isnt "object"
             callbacks.push(callback)

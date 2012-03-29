@@ -274,6 +274,30 @@ define [
             doh.assertEqual 'plum', @monkey.newValue
         tearDown: () ->
     ,
+        name: "set_property_callsCatchAllWatchFunction"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+                    @watched = false
+                    @oldValue = false
+                    @newValue = false
+            )
+            @watchHandle = @monkey.watch '*', (key, oldValue, newValue, index, self) ->
+                this.uberwatched = true
+                this.oldValue = oldValue
+                this.newValue = newValue
+        runTest: (t) ->
+            #Act
+            @monkey.set('food', 'plum')
+            #Assert
+            doh.assertTrue @monkey.uberwatched
+            doh.assertEqual 'banana', @monkey.oldValue
+            doh.assertEqual 'plum', @monkey.newValue
+        tearDown: () ->
+    ,
         name: "remove_watcherHandle_watcherIsNotInvokedByPropertyChange"
         setUp: () ->
             #Arrage
