@@ -249,4 +249,121 @@ define [
             same = @obj.is declare "BaseClass"
             #Assert
             doh.assertTrue same
+    ,
+        name: "set_watchedProperty_callsWatchFunction"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+                    @watched = false
+                    @oldValue = false
+                    @newValue = false
+            )
+            @watchHandle = @monkey.watch 'food', (key, oldValue, newValue, index, self) ->
+                this.watched = true
+                this.oldValue = oldValue
+                this.newValue = newValue
+        runTest: (t) ->
+            #Act
+            @monkey.set('food', 'plum')
+            #Assert
+            doh.assertTrue @monkey.watched
+            doh.assertEqual 'banana', @monkey.oldValue
+            doh.assertEqual 'plum', @monkey.newValue
+        tearDown: () ->
+    ,
+        name: "remove_watcherHandle_watcherIsNotInvokedByPropertyChange"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+                    @watched = false
+                    @oldValue = false
+                    @newValue = false
+            )
+            @watchHandle = @monkey.watch 'food', (key, oldValue, newValue, index, self) ->
+                this.watched = true
+                this.oldValue = oldValue
+                this.newValue = newValue
+            @watchHandle.remove()
+        runTest: (t) ->
+            #Act
+            @monkey.set('food', 'plum')
+            #Assert
+            doh.assertFalse @monkey.watched
+            doh.assertFalse @monkey.oldValue
+            doh.assertFalse @monkey.newValue
+        tearDown: () ->
+    ,
+        name: "set_validatedProperty_callsValidatorFunction"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+                    @validated = false
+                    @oldValue = false
+                    @newValue = false
+            )
+            @validateHandle = @monkey.validate 'food', (key, oldValue, newValue, index, self) ->
+                this.validated = true
+                this.oldValue = oldValue
+                this.newValue = newValue
+                0
+        runTest: (t) ->
+            #Act
+            @monkey.set('food', 'plum')
+            #Assert
+            doh.assertTrue @monkey.validated
+            doh.assertEqual 'banana', @monkey.oldValue
+            doh.assertEqual 'plum', @monkey.newValue
+        tearDown: () ->
+    ,
+        name: "remove_validatorHandle_validatorIsNotInvokedByPropertyChange"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+                    @validated = false
+                    @oldValue = false
+                    @newValue = false
+            )
+            @validateHandle = @monkey.validate 'food', (key, oldValue, newValue, index, self) ->
+                this.validated = true
+                this.oldValue = oldValue
+                this.newValue = newValue
+                0
+            @validateHandle.remove()
+        runTest: (t) ->
+            #Act
+            @monkey.set('food', 'plum')
+            #Assert
+            doh.assertFalse @monkey.validated
+            doh.assertFalse @monkey.oldValue
+            doh.assertFalse @monkey.newValue
+        tearDown: () ->
+    ,
+        name: "set_invalidatedProperty_propertyIsNotSet"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+            )
+            @validateHandle = @monkey.validate 'food', (key, oldValue, newValue, index, self) ->
+                1
+        runTest: (t) ->
+            #Act
+            @monkey.set('food', 'plum')
+            #Assert
+            doh.assertEqual 'banana', @monkey.food
+        tearDown: () ->
     ]

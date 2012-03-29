@@ -91,7 +91,7 @@ define [
         name: "cache_url_correctString"
         setUp: () ->
             #Arrange
-            @url = "../../../clazzy/tests/abstraction/resources/dummy.txt"
+            @url = "../../clazzy/tests/abstraction/resources/dummy.txt"
             @content = "dummy"
         runTest: (t) -> 
             #Act

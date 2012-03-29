@@ -32,8 +32,8 @@ define [
             ioc.register "INormal", "tests.NormalDummy", false
             ioc.register "IHelper1", "clazzy.tests.helpers.Helper1", false
             ioc.register "IHelper2", "clazzy.tests.helpers.Helper2", false
-            registerTemplate "THelper2", "clazzy.tests.helpers.Helper2", cache new _url("../../../../lib/clazzy/tests/helpers/HelperTemplate.html")
-            registerTemplate "DepsTemplate", "tests.NormalDummyWithDepsInTemplate", cache new _url("../../../../lib/clazzy/tests/helpers/DepsTemplate.html")
+            registerTemplate "THelper2", "clazzy.tests.helpers.Helper2", cache new _url("../../../lib/clazzy/tests/helpers/HelperTemplate.html")
+            registerTemplate "DepsTemplate", "tests.NormalDummyWithDepsInTemplate", cache new _url("../../../lib/clazzy/tests/helpers/DepsTemplate.html")
         runTest: (t) -> 
             #Act
             doh.assertTrue true
