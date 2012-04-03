@@ -10,6 +10,8 @@ define [
     "clazzy/TemplateRegistry"
     "clazzy/namelocators/TemplateNameLocator"
 ], (locator, lang, lib, Deferred, tRegistry, tLocator) -> 
+    'use strict'
+
     _alldependencies = []
     _allstores = []
     _allvalues = []

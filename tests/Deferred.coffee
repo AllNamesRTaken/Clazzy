@@ -29,7 +29,8 @@ define [
         runTest: (t) -> 
             #Act
             d = new doh.Deferred()
-            promise = @deferred.then d.getTestCallback (data) -> 
+            promise = @deferred.then (data) -> 
+                data
             promise.then d.getTestCallback (data) -> 
                 #Assert
                 doh.assertEqual 1, data

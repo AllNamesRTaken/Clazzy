@@ -6,6 +6,8 @@ define [
     "clazzy/Clazzy"
     "clazzy/Exception"
 ], (Class, Exception) ->
+    'use strict'
+    
     mutator = () ->
     freeze = Object.freeze or () -> 
     _hitch = (that, func) ->
@@ -22,8 +24,8 @@ define [
             @head
             @nextListener
             @promise = 
-                then: @then
-                cancel: @cancel
+                then: _hitch this, @then
+                cancel: _hitch this, @cancel
             @deferred = this
             freeze @promise
             @fired = -1
@@ -102,7 +104,7 @@ define [
                 deferred: returnDeferred
             if @nextListener
                 @head = @head.next = listener
-            else 
+            else
                 @nextListener = @head = listener
             @notify() if @finished
             returnDeferred.promise

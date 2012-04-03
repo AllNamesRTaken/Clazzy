@@ -1,6 +1,8 @@
 define [
     "clazzy/DeferredList"
 ], (DeferredList) ->
+    'use strict'
+
     Lib = 
         deferList: (list, fireOnOneCallback, fireOnOneErrback, consumeErrors, canceller) -> 
             dl = new DeferredList()

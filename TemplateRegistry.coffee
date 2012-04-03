@@ -1,6 +1,8 @@
 define [
     "clazzy/Exception"
 ], (Exception) ->
+    'use strict'
+
     _DEFAULT = "default"
     _registry = 
         default: {}

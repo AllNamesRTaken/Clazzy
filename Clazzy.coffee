@@ -52,6 +52,7 @@ define [
     "clazzy/abstraction/Lang" #used only for the clone functionality, replace if you want
     "clazzy/Exception" #super basic class
 ], (_lang, Exception) ->
+    'use strict'
     #Taken shamelessly from MDN
     unless Array::indexOf
         Array::indexOf = (searchElement) ->

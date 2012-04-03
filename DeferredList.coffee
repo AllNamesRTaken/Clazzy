@@ -7,6 +7,7 @@ define [
     "clazzy/Clazzy"
     "clazzy/Deferred"
 ], (Class, _deferred) ->
+    'use strict'
 
     Class "clazzy.DeferredList", _deferred, null, 
         run: (list, fireOnOneCallback, fireOnOneErrback, consumeErrors = true, canceller) -> 

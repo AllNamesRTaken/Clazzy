@@ -1,6 +1,6 @@
 {
     "name": "Clazzy",
-    "version": "1.0",
+    "version": "1.0.0",
     "main": "Clazzy",
     "dependencies": {
     },
@@ -11,8 +11,8 @@
             "url": "http://www.opensource.org/licenses/MIT"
         }
     ],
-    "bugs": "none",
+    "bugs": "none ;)",
     "keywords": ["JavaScript", "Classful", "IoC"],
     "homepage": "hemsida",
-    "dojoBuild": "app.profile.js"
+    "dojoBuild": "clazzy.package.js"
 }
