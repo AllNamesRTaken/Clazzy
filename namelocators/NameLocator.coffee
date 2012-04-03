@@ -3,6 +3,7 @@ define [
     "clazzy/abstraction/Lang"
     "clazzy/Exception"
 ], ( Class, lang, Exception) ->
+    'use strict'
 
     _DEFAULT = "default"
     

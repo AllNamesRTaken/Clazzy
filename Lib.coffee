@@ -1,5 +1,5 @@
 define [
-    "clazzy/DeferredList"
+    "clazzy/DeferredList" 
 ], (DeferredList) ->
     'use strict'
 

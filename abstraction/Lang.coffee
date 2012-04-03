@@ -1,5 +1,7 @@
 define [
 ], (DeferredList) ->
+    'use strict'
+
     Lang = 
         hitch: (that, func) ->
             if not that then func else () -> 

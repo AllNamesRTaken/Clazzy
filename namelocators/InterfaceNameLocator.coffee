@@ -1,6 +1,8 @@
 define [
     "clazzy/namelocators/NameLocator"
 ], (NameLocator) ->
+    'use strict'
+
     namelocator = new NameLocator()
     InterfaceNameLocator = 
         getConfig: () -> 
