@@ -39,6 +39,14 @@ myObject.set "nonExistingProperty", 666 # -> throws Error
 myObject.get "myProperty1" # -> returns 42
 myObject.get "nonExistingProperty" # -> throws Error
 myObject.myFunc1() # -> awesomeness
+myObject.watch "myProperty1", (prop, oldValue, newValue) ->
+  console.log "Property " + prop + " went from " + oldValue + " to " + newValue
+myObject.validate "myProperty1", (prop, oldValue, newValue)-> 
+  valid = newValue is "FOO" or newValue is "BAR"
+  console.log "Invalid value" if not valid
+  return valid
+myObject.set "myProperty1", "FOO" # -> logs our message sets the property value
+myObject.set "myProperty1", "Bad value" # -> logs "Invalid Value" and does not set the property value
 ```
 
 Sweet! But why the setters and getters? Well they let us jack in and observe when the function is called and what was set or get using e.g. dojos aspect module since it is now a function and not a javascript object property.
