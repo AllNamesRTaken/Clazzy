@@ -24,6 +24,11 @@ define [
         configExists: (configname) ->
             if @_allsources[configname]? then true else false
 
+        configIsEmpty: (configname) ->
+            for own prop of @_allsources[configname]
+                return false
+            true
+
         initConfig: (configname) -> 
             return if @configExists(configname)
             @_allsources[configname] = {}

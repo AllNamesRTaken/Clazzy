@@ -50,6 +50,28 @@ define [
             doh.assertFalse templateNameLocator.configExists @configName
         tearDown: () -> 
     ,
+        name: "configIsEmpty_emptyConfig_true"
+        setUp: () ->
+            #Arrange
+        runTest: (t) -> 
+            #Act
+            empty = templateNameLocator.configIsEmpty("default")
+            #Assert
+            doh.assertTrue empty
+        tearDown: () ->
+    ,
+        name: "configIsEmpty_nonEmptyConfig_false"
+        setUp: () ->
+            #Arrange
+            templateNameLocator.register("mySource", "myTarget")
+        runTest: (t) -> 
+            #Act
+            empty = templateNameLocator.configIsEmpty("default")
+            #Assert
+            doh.assertFalse empty
+        tearDown: () ->
+            templateNameLocator.clear()
+    ,     
         name: "register_newTemplateNameAndClassName_noError"
         setUp: () ->
             #Arrange

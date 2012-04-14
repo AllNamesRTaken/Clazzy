@@ -45,7 +45,7 @@ define [
             doh.assertTrue nameLocator.configExists @configName
         tearDown: () -> 
     ,
-        name: "configExists_notExistingConfig_true"
+        name: "configExists_notExistingConfig_false"
         setUp: () ->
             #Arrange
             @configName = "nonExistingConfigName"
@@ -55,6 +55,28 @@ define [
             doh.assertFalse nameLocator.configExists @configName
         tearDown: () -> 
     ,
+        name: "configIsEmpty_emptyConfig_true"
+        setUp: () ->
+            #Arrange
+        runTest: (t) -> 
+            #Act
+            empty = nameLocator.configIsEmpty("default")
+            #Assert
+            doh.assertTrue empty
+        tearDown: () ->
+    ,
+        name: "configIsEmpty_nonEmptyConfig_false"
+        setUp: () ->
+            #Arrange
+            nameLocator.register("mySource", "myTarget")
+        runTest: (t) -> 
+            #Act
+            empty = nameLocator.configIsEmpty("default")
+            #Assert
+            doh.assertFalse empty
+        tearDown: () ->
+            nameLocator.clear()
+    ,        
         name: "register_existingSourceNameAndTargetName_throws"
         setUp: () ->
             #Arrange

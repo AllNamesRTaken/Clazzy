@@ -8,6 +8,9 @@ define [
         configExists: (config) ->
             namelocator.configExists(config or namelocator.config)
 
+        configIsEmpty: (config) ->
+            namelocator.configIsEmpty(config or namelocator.config)
+
         getConfig: () -> 
             namelocator.config
         
