@@ -5,6 +5,7 @@ define [
     Lang = 
         hitch: (that, func) ->
             if not that then func else () -> 
+                func = that[func] if typeof func is "string"
                 func.apply(that, arguments || [])
         clone: (src) ->
             if not src or typeof src isnt "object" or "function" is typeof src
