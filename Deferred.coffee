@@ -7,16 +7,17 @@ define [
     "clazzy/Exception"
 ], (Class, Exception) ->
     'use strict'
-    
+    #return D
     mutator = () ->
     freeze = Object.freeze or () -> 
     _hitch = (that, func) ->
         if not that then func else () -> 
+            func = that[func] if typeof func is "string"
             func.apply(that, arguments || [])
 
     # A deferred provides an API for creating and resolving a promise.
-    Class "clazzy.Deferred", null, null
-        constructor: () -> 
+    Deferred = Class "clazzy.Deferred", null, null
+        constructor: () ->
             @canceller
             @result
             @finished
@@ -38,6 +39,7 @@ define [
             @result = value
             @finished = true
             @notify()
+            undefined
         notify: () -> 
             while(not mutated && @nextListener)
                 listener = @nextListener
@@ -47,31 +49,32 @@ define [
 
                 func = (if @isError then listener.error else listener.resolved)
                 if func
-                    #try 
-                    newResult = func @result
-                    if newResult and typeof newResult.then is "function"
-                        newResult.then _hitch(listener.deferred, "resolve"), _hitch(listener.deferred, "reject"), _hitch(listener.deferred, "progress")
-                        continue
+                    try 
+                        newResult = func @result
+                        if newResult and typeof newResult.then is "function"
+                            newResult.then _hitch(listener.deferred, "resolve"), _hitch(listener.deferred, "reject"), _hitch(listener.deferred, "progress")
+                            continue
 
-                    unchanged = mutated and newResult is undefined
-                    if mutated and not unchanged
-                        @isError = newResult instanceof Exception
+                        unchanged = mutated and newResult is undefined
+                        if mutated and not unchanged
+                            @isError = newResult instanceof Exception
 
-                    listener.deferred[if unchanged and @isError then "reject" else "resolve"](if unchanged then @result else newResult)
-                    #catch e
-                    #    listener.deferred.reject e
+                        listener.deferred[if unchanged and @isError then "reject" else "resolve"](if unchanged then @result else newResult)
+                    catch e
+                        listener.deferred.reject e
                 else
                     if @isError
                         listener.deferred.reject @result
                     else 
                         listener.deferred.resolve @result
-            this
+            undefined
 
         # calling resolve will resolve the promise
         resolve: (value) -> 
             @fired = 0
             @results = [value, null]
             @complete value
+            undefined
 
         # calling error will indicate that the promise failed
         reject: (error) ->
@@ -79,6 +82,7 @@ define [
             @fired = 1
             @complete error
             @results = [null, error]
+            undefined
 
         # call progress to provide updates on the progress on the completion of the promise
         progress: (update) -> 
@@ -87,7 +91,7 @@ define [
                 progress = listener.progress
                 progress and progress update
                 listener = listener.next
-            this
+            undefined
         addCallbacks: (callback, errback) ->
             @then callback, errback, mutator
             this
@@ -95,7 +99,7 @@ define [
             if progressCallback == mutator 
                 returnDeferred = this
             else 
-                returnDeferred = new clazzy.Deferred()
+                returnDeferred = new Deferred()
                 returnDeferred.canceller = @cancel
             listener = 
                 resolved: resolvedCallback,
