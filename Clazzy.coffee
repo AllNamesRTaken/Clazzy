@@ -57,7 +57,7 @@ define [
     Class = (classname, inheritance, interfaces = [], jsonObject = {}) -> 
         throw new Exception("TypeException", "Inheritance can not be an Array") if inheritance instanceof Array
         throw new Exception("TypeException", "Interfaces must be an Array or null/undefined") if interfaces and not (interfaces instanceof Array)
-        root = if window? then window else {};
+        root = if window? then window else {}
         if !inheritance 
             parentClass = BaseClass
         else if "function" is typeof inheritance 
