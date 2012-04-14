@@ -49,102 +49,15 @@ Why set and get?
 Because Dojo has an excelent aspect module that lets me latch on to (wrap) functions (which doesnt work with objects) and UI bound automatically updating UI.
 ###
 define [
-    "clazzy/abstraction/Lang" #used only for the clone functionality, replace if you want
-    "clazzy/Exception" #super basic class
-], (_lang, Exception) ->
+    "clazzy/Exception" #super basic exception
+    "clazzy/BaseClass" #super basic class
+], (Exception, BaseClass) ->
     'use strict'
-    #Taken shamelessly from MDN
-    unless Array::indexOf
-        Array::indexOf = (searchElement) ->
-            "use strict"
-            throw new TypeError()    unless this?
-            t = Object(this)
-            len = t.length >>> 0
-            return -1    if len is 0
-            n = 0
-            if arguments.length > 0
-                n = Number(arguments[1])
-                unless n is n
-                    n = 0
-                else n = (n > 0 or -1) * Math.floor(Math.abs(n))    if n isnt 0 and n isnt Infinity and n isnt -Infinity
-            return -1    if n >= len
-            k = (if n >= 0 then n else Math.max(len - Math.abs(n), 0))
-            while k < len
-                return k    if k of t and t[k] is searchElement
-                k++
-            -1
-    #The class all other classes inherit from.
-    class BaseClass
-        declaredClass: "BaseClass"
-        _implements: () -> []
-        _fullname: () -> ["BaseClass"]
-        constructor: () -> 
-            if arguments.length and "object" is typeof arguments[0]
-                @[key] = prop for key, prop of arguments[0]
-            @_watchers = (prop, oldValue, newValue, index, self) ->
-                if callbacks = @_watchers[key = '_' + prop]?.slice()
-                    for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
-                        callback.call(this, prop, oldValue, newValue, index, self)
-                if callbacks = @_watchers['*']
-                    for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
-                        callback.call(this, prop, oldValue, newValue, index, self)
-                this
-            @_validators = (prop, oldValue, newValue, index, self) ->
-                if callbacks = @_validators[key = '_' + prop]?.slice()
-                    for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
-                        return callback.call(this, prop, oldValue, newValue, index, self)
-                0
-            this
-        is: (name) ->
-            name = name.declaredClass if "object" is typeof name and name?.declaredClass
-            name = name.classname if "function" is typeof name
-            return true if name in @_fullname()
-            return true if name in @_implements()
-            false
-        isnt: (name) ->
-            not @is name
-        set: (prop, value, index, self) -> 
-            throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + this.declaredClass) if this[prop] is undefined
-            oldValue = this[prop]
-            newValue = _lang.clone value
-            if 1 is (cancel = this._validators(prop, oldValue, newValue, index, self))
-                return oldValue
-
-            if index? then this[prop][index] = newValue else this[prop] = newValue
-            this._watchers(prop, oldValue, newValue, index, self)
-            newValue
-        get: (prop) -> 
-            throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + this.declaredClass) if this[prop] is undefined
-            this[prop]
-        watch: (prop, callback) ->
-            key = if prop isnt '*' then '_' + prop else prop
-            callbacks = @_watchers[key]
-            callbacks = @_watchers[key] = [] if typeof callbacks isnt "object"
-            callbacks.push(callback)
-            return {
-                remove: () ->
-                    callbacks.splice(callbacks.indexOf(callback), 1)
-            }
-        validate: (prop, callback) ->
-            key = '_' + prop
-            callbacks = @_validators[key]
-            callbacks = @_validators[key] = [] if typeof callbacks isnt "object"
-            callbacks.push(callback)
-            return {
-                remove: () ->
-                    callbacks.splice(callbacks.indexOf(callback), 1)
-            }
-        toString: () ->
-            @declaredClass
-    BaseClass.classname = "BaseClass"
 
     Class = (classname, inheritance, interfaces = [], jsonObject = {}) -> 
         throw new Exception("TypeException", "Inheritance can not be an Array") if inheritance instanceof Array
         throw new Exception("TypeException", "Interfaces must be an Array or null/undefined") if interfaces and not (interfaces instanceof Array)
-        root = window;
+        root = if window? then window else {};
         if !inheritance 
             parentClass = BaseClass
         else if "function" is typeof inheritance 
@@ -218,3 +131,4 @@ define [
             Obj.classname = classname
             return Obj
         )()
+    if window? then window.Class = Class
