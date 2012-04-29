@@ -18,6 +18,10 @@ define [
     # A deferred provides an API for creating and resolving a promise.
     Deferred = Class "clazzy.Deferred", null, null
         constructor: () ->
+            S4 = () ->
+                (((1+Math.random())*0x10000)|0).toString(16).substring(1)
+            @guid = (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4())
+            @id =  
             @canceller
             @result
             @finished
@@ -35,7 +39,7 @@ define [
             this
 
         complete: (value) -> 
-            throw new Exception("DeferredException", "This deferred has already been resolved") if @finished
+            throw new Exception("DeferredException", "This deferred has already been resolved.") if @finished
             @result = value
             @finished = true
             @notify()
@@ -61,6 +65,7 @@ define [
 
                         listener.deferred[if unchanged and @isError then "reject" else "resolve"](if unchanged then @result else newResult)
                     catch e
+                        console.warn e
                         listener.deferred.reject e
                 else
                     if @isError

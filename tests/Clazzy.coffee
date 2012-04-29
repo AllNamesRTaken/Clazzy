@@ -108,6 +108,42 @@ define [
             #Assert
             doh.assertEqual(@fullName, obj._fullname())
     ,
+        name: "declare_nameSpacedNameAndInheritanceString_correctFullName"
+        setUp: () ->
+            #Arrage
+            @classname1 = "namespace.dummy1"
+            @classname2 = "namespace.dummy2"
+            @fullName = [@classname2, @classname1, "BaseClass"]
+            @parentClass = declare @classname1
+        runTest: (t) ->
+            #Act
+            cls = declare @classname2, @classname1
+            obj = new cls()
+            #Assert
+            doh.assertEqual(@fullName, obj._fullname())
+    ,
+        name: "declare_inheritanceIsArray_throws"
+        setUp: () ->
+            #Arrage
+            @classname1 = "namespace.dummy1"
+            @classname2 = "namespace.dummy2"
+            @parentClass = declare @classname1
+        runTest: (t) ->
+            @declare = declare
+            #Act
+            #Assert
+            doh.assertError Exception, this, "declare", [@classname2, [@parentClass]]
+    ,
+        name: "declare_interfacesIsntArray_throws"
+        setUp: () ->
+            #Arrage
+            @classname1 = "namespace.dummy1"
+        runTest: (t) ->
+            @declare = declare
+            #Act
+            #Assert
+            doh.assertError Exception, this, "declare", [@classname1, null, "someInterfaceName"]
+    ,
         name: "declare_nameSpacedNameInheritanceWithConstructors_constructorInheritance"
         setUp: () ->
             #Arrage
@@ -137,6 +173,16 @@ define [
             value = @obj.get "prop1"
             #Assert
             doh.assertEqual(@propValue, value)
+    ,
+        name: "objectGetter_nonExisting_throws"
+        setUp: () ->
+            #Arrage
+            @propValue = 1
+            @obj = new (declare "namespace.dummy", null, null, {})()
+        runTest: (t) ->
+            #Act
+            #Assert
+            doh.assertError Exception, @obj, "set", ["prop1", @propValue]
     ,
         name: "objectSetter_propertyNameAndObjectValue_setsValue"
         setUp: () ->
@@ -389,5 +435,38 @@ define [
             @monkey.set('food', 'plum')
             #Assert
             doh.assertEqual 'banana', @monkey.food
+        tearDown: () ->
+    ,
+        name: "inherited_unexisting_throws"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                eat: (food) ->
+                    food
+            )
+        runTest: (t) ->
+            #Act
+            #Assert
+            doh.assertError Exception, @monkey, "inherited", ["eat", "namespace.Monkey", ["banana"]]
+        tearDown: () ->
+    ,
+        name: "inherited_existing_inheritedCalled"
+        setUp: () ->
+            #Arrage
+            Monkey = declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                eat: (food) ->
+                    food
+            @baboon = new (declare "namespace.Baboon", Monkey, null, 
+                constructor: () ->
+                eat: (food) ->
+                    @inherited "eat", "namespace.Baboon", ["banana"]
+            )
+        runTest: (t) ->
+            #Act
+            eaten = @baboon.eat('banana')
+            #Assert
+            doh.assertEqual 'banana', eaten
         tearDown: () ->
     ]

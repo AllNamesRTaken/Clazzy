@@ -15,17 +15,17 @@ define [
             @_watchers = (prop, oldValue, newValue, index, self) ->
                 if callbacks = @_watchers[key = '_' + prop]?.slice()
                     for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
+                        throw new Exception("NotAFunctionException", "watcher is not a function for property: " + prop) if not callback.call?
                         callback.call(this, prop, oldValue, newValue, index, self)
                 if callbacks = @_watchers['*']
                     for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
+                        throw new Exception("NotAFunctionException", "watcher is not a function for property: " + prop) if not callback.call?
                         callback.call(this, prop, oldValue, newValue, index, self)
                 this
             @_validators = (prop, oldValue, newValue, index, self) ->
                 if callbacks = @_validators[key = '_' + prop]?.slice()
                     for callback in callbacks
-                        throw new Exception("watcher is not a function for property: " + prop) if not callback.call?
+                        throw new Exception("NotAFunctionException", "watcher is not a function for property: " + prop) if not callback.call?
                         return callback.call(this, prop, oldValue, newValue, index, self)
                 0
             this
@@ -68,6 +68,12 @@ define [
                 remove: () ->
                     callbacks.splice(callbacks.indexOf(callback), 1)
             }
+        inherited: (fname, classname, args) ->
+            passed = classname is this.declaredClass
+            ctx = this.__super__
+            ctx = ctx.__super__ until not ctx? or (ctx.hasOwnProperty(fname) and (passed=passed or classname is ctx.declaredClass) and classname isnt ctx.declaredClass)
+            throw new Exception("NullPointerException", @declaredClass + " has no __super__ with function " + fname) if not ctx?
+            return ctx[fname].apply(this, args) if ctx?
         toString: () ->
             @declaredClass
     BaseClass.classname = "BaseClass"

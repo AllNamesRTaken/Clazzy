@@ -9,7 +9,8 @@ define [
     "clazzy/Deferred"
     "clazzy/TemplateRegistry"
     "clazzy/namelocators/TemplateNameLocator"
-], (locator, lang, lib, Deferred, tRegistry, tLocator) -> 
+    "clazzy/Exception"
+], (locator, lang, lib, Deferred, tRegistry, tLocator, Exception) -> 
     'use strict'
 
     _alldependencies = []
@@ -45,7 +46,10 @@ define [
             dependencies.templateString = tRegistry.get tLocator.findTemplate classname if tLocator.hasTemplate classname
             dependencies = lang.mixin dependencies, _values[classname] or {}
             if lang.isFunction _store[classname]
-                return new _store[classname](dependencies)
+                try
+                    return new _store[classname](dependencies)
+                catch e
+                    throw new Exception("UnableToNewException", "IoC crashed when trying to new "+classname)
             return _store[classname]
 		
         storeInstanceIfSingelton: (classname, instance) -> 
@@ -90,19 +94,28 @@ define [
                 else
                     toBeRequired.push classname
 
+            #if we have requires in progress add those to our list of deferreds
             deferreds = (_required[classname] for classname in inProcess)
+            #if we have deferreds in process of being required, require the once 
+            #not in process and add the deferreds to our list
             if deferreds.length>0
                 deferreds.push @require toBeRequired if toBeRequired.length>0 
-                return lib.deferList(deferreds)
+                #return lib.deferList(deferreds)
             
-            deferredList = lib.deferList((_required[classname] = new Deferred()) for classname in notRequired)
+            #if we have required the toBeRequired above, only add new deferreds for namesToBeRegistered
+            #else add both toBeRequired and namesToBeRegistered (that is total notRequired), 
+            #and then set the return deferredList
+            deferreds = deferreds.concat ((_required[classname] = new Deferred()) for classname in if deferreds.length>0 then namesToBeRegistered else notRequired)
+            deferredList = lib.deferList(deferreds)
 
             #register and look up their dependencies for all classes that
             #are not required but still seem to be defines allready
+            #this call will resolve the deferreds created above for namesToBeRequired
             @registerRequired.call(this, namesToBeRegistered, classesToBeRegistered) if namesToBeRegistered.length
 
-            #require all dependencies that are neither defined nor required
-            if toBeRequired.length
+            #and do a real AMD require if they weren required already above
+            if inProcess.length is 0 and toBeRequired.length
+                toBeRequired = @placePluginsLast toBeRequired
                 modules = @convertToAmdModuleNames toBeRequired
                 require modules, lang.hitch this, (classes...) ->
                     names = toBeRequired
@@ -125,14 +138,22 @@ define [
             return @registerDependencies classname, classes, interfaces
 
         getTemplateDependencies: (template) ->
-            deps = []
+            depsL = []
+            depsD = {}
             re = /data-dojo-type="(.*?)"/gi
             while match = re.exec(template)
-                deps.push match[1]
-            deps
+                depsL.push match[1] if not depsD[match[1]]?
+                depsD[match[1]] = 1
+            depsL
+
+        placePluginsLast: (classnames) ->
+            isplugin = /!/
+            plugins = (name for name in classnames when isplugin.test name)
+            nonplugins = (name for name in classnames when not isplugin.test name)
+            nonplugins.concat plugins
 
         convertToAmdModuleNames: (classnames) ->
-            modules = (classname.replace(/\./g, "/") for classname in classnames)
+            modules = ((if classname.indexOf("/") is -1 then classname.replace(/\./g, "/") else classname) for classname in classnames)
             modules
             
     ioc =

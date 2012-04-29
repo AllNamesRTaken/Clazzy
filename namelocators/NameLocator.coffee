@@ -42,9 +42,9 @@ define [
 
         register: (sourceName, targetName, config = @config) ->
             @initConfig(config);
-            throw new Exception("RegisterException", sourceName + ", " + targetName + " combination already registered in config '" + (config || _DEFAULT) + "'") if @_allsources[config][targetName] or @_alltargets[config][sourceName]
+            throw new Exception("RegisterException", sourceName + " is already registered to a target in config '" + (config || _DEFAULT) + "'") if @_alltargets[config][sourceName]?
             @_allsources[config][targetName] = sourceName
-            @_alltargets[config][sourceName] = targetName
+            @_alltargets[config][sourceName] = targetName if not @_allsources[config][sourceName]?
 
         findSource: (targetName) ->
             return (value for name, value of @_sources) if not targetName
