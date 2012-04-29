@@ -1,56 +1,6 @@
-###
-Copyright (C) 2012 Joel Brage
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-###
-###
-Howto:
 define [
-  "some/path/Clazzy" 
-  "some/path/MyBaseClass" 
-  "some/path/MyMixin" 
-], (Class, MyBaseClass, MyMixin) ->
-# Using the framwork.Lang style object declaration
-# The first parameter in the array after the objects name will be treated as inheritance if it is also a declared class.
-# If it is string it will just be another interface. Latter declared classes passed in will be treated as mixins as well as interfaces.
-  Class "some.namespace.MyClass", MyBaseClass ["someInterface1", "someInterface2", MyMixin], 
-    constructor: () ->
-      @.myProperty1 = 1
-      @.myProperty2 = 2
-      @.myProperty3 = 3
-    myFunc1: () ->
-      # awesomeness goes here
-    myFunc2: () ->
-      # awesomeness goes here
------------
-myObject = new MyClass() # if MyClass module exists in the define
-myObject = new some.namespace.MyClass()
-myObject._fullname # -> ["some.namespace.MyClass", "some.path.MyBaseClass", "BaseClass"]
-myObject.declaredClass # -> "some.namespace.MyClass"
-myObject.toString() # -> "some.namespace.MyClass"
-myObject._implements # ->  "someInterface1", "someInterface2", "some.path.MyMixin"
-myObject.is "someInterface2" # -> true
-myObject.isnt "a banana" # -> true
-myObject.set "myProperty1", 42 # -> property is set
-myObject.set "nonExistingProperty", 666 # -> throws Error
-myObject.set "myProperty1" # -> returns 42
-myObject.set "nonExistingProperty" # -> throws Error
-myObject.myFunc1() # -> awesomeness
-
-----------
-Q&A:
-Why interfaces?
-Because I do dependency injection and need something to represent the functionality contract for my IoC.
-Why set and get?
-Because Dojo has an excelent aspect module that lets me latch on to (wrap) functions (which doesnt work with objects) and UI bound automatically updating UI.
-###
-define [
-    "clazzy/Exception" #super basic exception
-    "clazzy/BaseClass" #super basic class
+    "clazzy/Exception"
+    "clazzy/BaseClass"
 ], (Exception, BaseClass) ->
     'use strict'
 
@@ -143,6 +93,10 @@ define [
 
             Obj.prototype._fullname = () -> 
                 return [classname].concat(Obj.prototype.constructor.__super__._fullname.call(this))
+
+            for own prop, func of Obj.prototype when "function" is typeof func
+                (pprop = Obj.prototype[prop]).nom = prop
+                pprop.cls = classname
 
             Obj.prototype.declaredClass = classname
             Obj.classname = classname

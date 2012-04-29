@@ -3,13 +3,14 @@ define [
     "clazzy/Exception"
     "clazzy/JavascriptExtensions"
 ], (_lang, Exception) ->
-    'use strict'
+    
     #The class all other classes inherit from.
     class BaseClass
         declaredClass: "BaseClass"
         _implements: () -> []
         _fullname: () -> ["BaseClass"]
         constructor: () -> 
+            'use strict'
             if arguments.length and "object" is typeof arguments[0]
                 @[key] = prop for key, prop of arguments[0]
             @_watchers = (prop, oldValue, newValue, index, self) ->
@@ -30,14 +31,17 @@ define [
                 0
             this
         is: (name) ->
+            'use strict'
             name = name.declaredClass if "object" is typeof name and name?.declaredClass
             name = name.classname if "function" is typeof name
             return true if name in @_fullname()
             return true if name in @_implements()
             false
         isnt: (name) ->
+            'use strict'
             not @is name
         set: (prop, value, index, self) -> 
+            'use strict'
             throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + this.declaredClass) if this[prop] is undefined
             oldValue = this[prop]
             newValue = _lang.clone value
@@ -48,9 +52,11 @@ define [
             this._watchers(prop, oldValue, newValue, index, self)
             newValue
         get: (prop) -> 
+            'use strict'
             throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + this.declaredClass) if this[prop] is undefined
             this[prop]
         watch: (prop, callback) ->
+            'use strict'
             key = if prop isnt '*' then '_' + prop else prop
             callbacks = @_watchers[key]
             callbacks = @_watchers[key] = [] if typeof callbacks isnt "object"
@@ -60,6 +66,7 @@ define [
                     callbacks.splice(callbacks.indexOf(callback), 1)
             }
         validate: (prop, callback) ->
+            'use strict'
             key = '_' + prop
             callbacks = @_validators[key]
             callbacks = @_validators[key] = [] if typeof callbacks isnt "object"
@@ -68,13 +75,20 @@ define [
                 remove: () ->
                     callbacks.splice(callbacks.indexOf(callback), 1)
             }
-        inherited: (fname, classname, args) ->
-            passed = classname is this.declaredClass
+        inherited: () ->
+            fname = this.inherited.caller.nom
+            args = this.inherited.caller.arguments
+            classname = this.inherited.caller.cls
+            passed = this.declaredClass is classname
             ctx = this.__super__
-            ctx = ctx.__super__ until not ctx? or (ctx.hasOwnProperty(fname) and (passed=passed or classname is ctx.declaredClass) and classname isnt ctx.declaredClass)
-            throw new Exception("NullPointerException", @declaredClass + " has no __super__ with function " + fname) if not ctx?
+            max = 20
+            ctx = ctx.__super__ until not ctx? or 
+                (ctx[fname]? and (passed=passed or classname is ctx.declaredClass) and classname isnt ctx.declaredClass)
+            #ctx = ctx.__super__ until not ctx? or (ctx.hasOwnProperty(fname) and (passed=passed or classname is ctx.declaredClass) and classname isnt ctx.declaredClass)
+            throw new Exception("NullPointerException", classname + " has no __super__ with function " + fname) if not ctx?
             return ctx[fname].apply(this, args) if ctx?
         toString: () ->
+            'use strict'
             @declaredClass
     BaseClass.classname = "BaseClass"
     BaseClass
