@@ -30,7 +30,24 @@ define [
 
     unless Array::indexOf
         Array::indexOf = indexOf
+
+    has = (searchElement) ->
+        "use strict"
+        throw new TypeError() unless this?
+        this.indexOf(searchElement) isnt -1
+    hasnt = (searchElement) ->
+        "use strict"
+        throw new TypeError() unless this?
+        this.indexOf(searchElement) is -1
+
+    unless Array::has
+        Array::has = has
+    unless Array::hasnt
+        Array::hasnt = hasnt
+
     {
     Array: 
         indexOf: indexOf
+        has: has
+        hasnt: hasnt
     }
