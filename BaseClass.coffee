@@ -88,7 +88,6 @@ define [
             max = 20
             ctx = ctx.__super__ until not ctx? or 
                 (ctx[fname]? and (passed=passed or classname is ctx.declaredClass) and classname isnt ctx.declaredClass)
-            #ctx = ctx.__super__ until not ctx? or (ctx.hasOwnProperty(fname) and (passed=passed or classname is ctx.declaredClass) and classname isnt ctx.declaredClass)
             throw new Exception("NullPointerException", classname + " has no __super__ with function " + fname) if not ctx?
             return ctx[fname].apply(this, args) if ctx?
         lock: (props, deferred) ->
@@ -115,7 +114,7 @@ define [
                     @set("_" + prop + "_locked", false) if @["_" + prop + "_locked"]?
         islocked: (prop) ->
             'use strict'
-            not not @_locked[prop]?
+            not not (@_locked[prop]? is true)
         toString: () ->
             'use strict'
             @declaredClass
