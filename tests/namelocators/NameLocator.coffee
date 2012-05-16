@@ -77,19 +77,6 @@ define [
         tearDown: () ->
             nameLocator.clear()
     ,        
-        name: "register_existingSourceNameAndTargetName_throws"
-        setUp: () ->
-            #Arrange
-            @sourceName = "mySource"
-            @targetName = "myTarget"
-            nameLocator.register(@sourceName, @targetName)
-        runTest: (t) -> 
-            #Act
-            #Assert
-            doh.assertError(Exception, nameLocator, "register", [@sourceName, @targetName])
-        tearDown: () ->
-            nameLocator.clear()
-    ,
         name: "findSource_targetName_found"
         setUp: () ->
             #Arrange

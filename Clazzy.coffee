@@ -1,7 +1,8 @@
 define [
+    "clazzy/abstraction/Lang"
     "clazzy/Exception"
     "clazzy/BaseClass"
-], (Exception, BaseClass) ->
+], (lang, Exception, BaseClass) ->
     'use strict'
 
     #-----------------------------------------------
@@ -60,11 +61,11 @@ define [
         #-----------------------------------------------
         # Find out which interfaces are really mixins
         #-----------------------------------------------
-        interfaces = interfaces.filter (el)->
+        interfaces = lang.filter interfaces, (el)->
             el?
-        mixins = interfaces.filter (el)-> 
+        mixins = lang.filter interfaces, (el)-> 
             "function" is typeof el
-        interfaces = interfaces.map (el)->
+        interfaces = lang.map interfaces, (el)->
             return el.classname if el.classname?
             el
             

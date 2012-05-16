@@ -85,19 +85,6 @@ define [
         tearDown: () ->
             templateNameLocator.clear()
     ,
-        name: "register_existingTemplateNameAndClassName_throws"
-        setUp: () ->
-            #Arrange
-            @templateName = "myTemplate"
-            @className = "myClass"
-            templateNameLocator.register(@templateName, @className)
-        runTest: (t) -> 
-            #Act
-            #Assert
-            doh.assertError(Exception, templateNameLocator, "register", [@templateName, @className])
-        tearDown: () ->
-            templateNameLocator.clear()
-    ,
         name: "findTemplate_className_found"
         setUp: () ->
             #Arrange

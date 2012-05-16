@@ -7,7 +7,6 @@ define [
     "clazzy/tests/DeferredList"
 	"clazzy/tests/Exception"	
 	"clazzy/tests/IoC"
-	"clazzy/tests/JavascriptExtensions"	
 	"clazzy/tests/Lib"	
 	"clazzy/tests/TemplateRegistry"	
 ], 1

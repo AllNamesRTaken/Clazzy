@@ -1,12 +1,25 @@
 define [
-], (DeferredList) ->
+    "underscore/main"
+], (_) ->
     'use strict'
+
+    _toArray = (obj, offset, startWith) ->
+        return (startWith||[]).concat(Array.prototype.slice.call(obj, offset||0))
 
     Lang = 
         hitch: (that, func) ->
-            if not that then func else () -> 
-                func = that[func] if typeof func is "string"
+            if arguments.length > 2
+                pre = _toArray(arguments, 2)
+                return () ->
+                    args = _toArray(arguments)
+                    func.apply(this, pre.concat(args))
+            return func if not that
+            func = that[func] if typeof func is "string"
+            return () -> 
                 func.apply(that, arguments || [])
+        partial: (method) -> #method, arguments
+            arr = [ null ];
+            return @hitch.apply(this, arr.concat(_toArray(arguments)))
         clone: (src) ->
             if not src or typeof src isnt "object" or "function" is typeof src
                 return src
@@ -29,6 +42,8 @@ define [
             return Lang.mixin(r, src, Lang.clone)
         isArray: (it) ->
             return it and (it instanceof Array or typeof it is "array")
+        isElement: (target) -> 
+            return if target?.nodeType is 1 then true else false
         isFunction: (it) ->
             return Object.prototype.toString.call(it) is "[object Function]"
         mixin: (dest = {}, source, copyFunc) ->
@@ -50,10 +65,10 @@ define [
                             dest[name] = if copyFunc then copyFunc(s) else s
             ###
             dest
-        filter: (a = [], fn) ->
-            out = []
-            for value, i in a
-                if fn(value, i, a)
-                    out.push value
-            out
+
+        # Underscore abstractions
+
+        indexOf: _.indexOf
+        filter: _.filter
+        map: _.map
 

@@ -461,7 +461,7 @@ define [
             @baboon = new (declare "namespace.Baboon", Monkey, null, 
                 constructor: () ->
                 eat: (food) ->
-                    @inherited "eat", "namespace.Baboon", ["banana"]
+                    @inherited()
             )
         runTest: (t) ->
             #Act

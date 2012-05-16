@@ -43,19 +43,6 @@ define [
         tearDown: () ->
             interfaceNameLocator.clear()
     ,
-        name: "register_existingInterfaceNameAndClassName_throws"
-        setUp: () ->
-            #Arrange
-            @interfaceName = "myInterface"
-            @className = "myClass"
-            interfaceNameLocator.register(@interfaceName, @className)
-        runTest: (t) -> 
-            #Act
-            #Assert
-            doh.assertError(Exception, interfaceNameLocator, "register", [@interfaceName, @className])
-        tearDown: () ->
-            interfaceNameLocator.clear()
-    ,
         name: "findInterface_className_found"
         setUp: () ->
             #Arrange
@@ -64,9 +51,9 @@ define [
             interfaceNameLocator.register(@interfaceName, @className)
         runTest: (t) -> 
             #Act
-            interface = interfaceNameLocator.findInterface @className
+            interfejs = interfaceNameLocator.findInterface @className
             #Assert
-            doh.assertEqual(@interfaceName, interface)
+            doh.assertEqual(@interfaceName, interfejs)
         tearDown: () ->
             interfaceNameLocator.clear()
     ,

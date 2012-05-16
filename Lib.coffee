@@ -9,6 +9,7 @@ define [
             dl.run(list, fireOnOneCallback, fireOnOneErrback, consumeErrors, canceller)
             dl
         findClass: (name) -> 
+            return null if not window
             parts = name.split "."
             cls = window
             for p in parts

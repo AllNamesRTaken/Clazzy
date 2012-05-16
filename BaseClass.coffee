@@ -1,8 +1,7 @@
 define [
     "clazzy/abstraction/Lang"
     "clazzy/Exception"
-    "clazzy/JavascriptExtensions"
-], (_lang, Exception) ->
+], (lang, Exception) ->
     
     #The class all other classes inherit from.
     class BaseClass
@@ -34,7 +33,7 @@ define [
         is: (name) ->
             'use strict'
             name = name.declaredClass if "object" is typeof name and name?.declaredClass
-            name = name.classname if _lang.isFunction name
+            name = name.classname if lang.isFunction name
             return true if name in @_fullname()
             return true if name in @_implements()
             false
@@ -45,7 +44,7 @@ define [
             'use strict'
             throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + @declaredClass) if this[prop] is undefined
             oldValue = this[prop]
-            newValue = _lang.clone value
+            newValue = lang.clone value
             if 1 is (cancel = @_validators(prop, oldValue, newValue, index, self))
                 return oldValue
 
@@ -64,7 +63,7 @@ define [
             callbacks.push(callback)
             return {
                 remove: () ->
-                    callbacks.splice(callbacks.indexOf(callback), 1)
+                    callbacks.splice(lang.indexOf(callbacks, callback), 1)
             }
         validate: (prop, callback, _first) ->
             'use strict'
@@ -77,7 +76,7 @@ define [
                 callbacks.push(callback)
             return {
                 remove: () ->
-                    callbacks.splice(callbacks.indexOf(callback), 1)
+                    callbacks.splice(lang.indexOf(callbacks, callback), 1)
             }
         inherited: () ->
             fname = @inherited.caller.nom
@@ -92,11 +91,10 @@ define [
             return ctx[fname].apply(this, args) if ctx?
         lock: (props, deferred) ->
             'use strict'
-            throw new Exception("IllegalArgumentsException", "lock must take a deferred as second argument") if not deferred? or not deferred.addBoth?
-            props = [props] if not _lang.isArray props
+            props = [props] if not lang.isArray props
             for prop in props
                 if not @islocked prop
-                    deferred.addBoth _lang.hitch this, ()->
+                    if deferred? then deferred.addBoth lang.hitch this, ()->
                         @unlock prop
                     @_locked[prop] = @validate prop, (prop, oldValue, newValue) ->
                         console.warn "Trying to set locked property '" + prop + "'' on " + @declaredClass
@@ -106,7 +104,7 @@ define [
                     @set("_" + prop + "_locked", true)
         unlock: (props) ->
             'use strict'
-            props = [props] if not _lang.isArray props
+            props = [props] if not lang.isArray props
             for prop in props
                 if @islocked prop
                     @_locked[prop].remove()
