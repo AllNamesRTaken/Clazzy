@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "main": "Clazzy",
     "dependencies": {
+        "undescore": "1.3.3"
     },
     "description": "Clazzy gives you classful javascript and an IoC container.",
     "licenses": [
