@@ -29,6 +29,7 @@ define [
                         throw new Exception("NotAFunctionException", "watcher is not a function for property: " + prop) if not callback.call?
                         return callback.call(this, prop, oldValue, newValue, index, self)
                 0
+            @_model = {}
             this
         is: (name) ->
             'use strict'
@@ -40,21 +41,32 @@ define [
         isnt: (name) ->
             'use strict'
             not @is name
+        haz: (prop) -> 
+            'use strict'
+            return true if this._model?.hasOwnProperty(prop) or this[prop] isnt undefined
+            false
+        haznt: (prop) -> 
+            'use strict'
+            not @haz prop
+        addModel: (model) ->
+           lang.mixin @_model, model 
         set: (prop, value, index, self) -> 
             'use strict'
-            throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + @declaredClass) if this[prop] is undefined
-            oldValue = this[prop]
-            newValue = lang.clone value
+            model = if this._model?[prop] isnt undefined then this._model else this
+            throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + @declaredClass) if @haznt prop
+            oldValue = model[prop]
+            newValue = value
             if 1 is (cancel = @_validators(prop, oldValue, newValue, index, self))
                 return oldValue
 
-            if index? then this[prop][index] = newValue else this[prop] = newValue
+            if index? then model[prop][index] = newValue else model[prop] = newValue
             @_watchers(prop, oldValue, newValue, index, self)
             newValue
         get: (prop) -> 
             'use strict'
-            throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + @declaredClass) if this[prop] is undefined
-            this[prop]
+            model = if this._model?[prop] isnt undefined then this._model else this
+            throw new Exception("IllegalPropertyNameException", "No property " + prop + " on class " + @declaredClass) if @haznt prop
+            model[prop]
         watch: (prop, callback) ->
             'use strict'
             key = if prop isnt '*' then '_' + prop else prop

@@ -6,7 +6,6 @@ define [
     "clazzy/Clazzy"
     "clazzy/Exception"
 ], (Class, Exception) ->
-    'use strict'
     #return D
     mutator = () ->
     freeze = Object.freeze or () -> 
@@ -36,15 +35,23 @@ define [
             @fired = -1
             @callback = @resolve
             @errback = @reject
+            try
+                caller = @constructor.caller?.caller?.caller
+                @fname = caller?.nom or "unknown"
+                @cls = caller?.cls or "unknown"
+            catch err
+                console.warn "strict mode used in a function calling Deferred"
             this
 
         complete: (value) -> 
+            'use strict'
             throw new Exception("DeferredException", "This deferred has already been resolved.") if @finished
             @result = value
             @finished = true
             @notify()
             undefined
         notify: () -> 
+            'use strict'
             while(not mutated && @nextListener)
                 listener = @nextListener
                 @nextListener = @nextListener.next
@@ -66,6 +73,7 @@ define [
                         listener.deferred[if unchanged and @isError then "reject" else "resolve"](if unchanged then @result else newResult)
                     catch e
                         console.warn e
+                        console.warn this
                         listener.deferred.reject e
                 else
                     if @isError
@@ -76,6 +84,7 @@ define [
 
         # calling resolve will resolve the promise
         resolve: (value) -> 
+            'use strict'
             @fired = 0
             @results = [value, null]
             @complete value
@@ -83,6 +92,7 @@ define [
 
         # calling error will indicate that the promise failed
         reject: (error) ->
+            'use strict'
             @isError = true
             @fired = 1
             @complete error
@@ -91,6 +101,7 @@ define [
 
         # call progress to provide updates on the progress on the completion of the promise
         progress: (update) -> 
+            'use strict'
             listener = @nextListener
             while listener
                 progress = listener.progress
@@ -98,14 +109,23 @@ define [
                 listener = listener.next
             undefined
         addCallbacks: (callback, errback) ->
+            'use strict'
             @then callback, errback, mutator
             this
         then: (resolvedCallback, errorCallback, progressCallback) -> 
+            argc = arguments.length
+            while argc
+                if (arg = arguments[argc-1])? and not arg.nom
+                    arguments[argc-1].nom = "then"
+                    arguments[argc-1].cls = "unknown"
+                argc--
+            that = this
             if progressCallback == mutator 
                 returnDeferred = this
             else 
                 returnDeferred = new Deferred()
-                returnDeferred.canceller = @cancel
+                returnDeferred.canceller = () -> 
+                    @cancel.apply(that, arguments || [])
             listener = 
                 resolved: resolvedCallback,
                 error: errorCallback,
@@ -118,6 +138,7 @@ define [
             @notify() if @finished
             returnDeferred.promise
         cancel: () ->
+            'use strict'
             if not @finished
                 error = @canceller and @canceller @deferred
                 if not @finished
@@ -127,9 +148,12 @@ define [
                     @deferred.reject error
 
         addCallback: (callback) ->
+            'use strict'
             @addCallbacks _hitch(this, callback)
         addErrback: (errback) ->
+            'use strict'
             @addCallbacks null, _hitch(this, errback)
         addBoth: (callback) ->
+            'use strict'
             enclosed = _hitch(this, callback);
             @addCallbacks enclosed, enclosed

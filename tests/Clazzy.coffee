@@ -205,7 +205,7 @@ define [
             #Assert
             doh.assertError Exception, @obj, "set", ["prop2", @propValue]
     ,
-        name: "objectSetter_propertyNameAndObjectValue_setValueIsAClone"
+        name: "objectSetter_propertyNameAndObjectValue_setValueIsNotClone"
         setUp: () ->
             #Arrage
             @propValue = {p1:1}
@@ -215,7 +215,7 @@ define [
             @obj.set "prop1", @propValue
             @propValue.p1 = 2
             #Assert
-            doh.assertNotEqual(@propValue, @obj.prop1)
+            doh.assertEqual(@propValue, @obj.prop1)
     ,
         name: "objectSetter_propertyNameValueAndIndex_setValueAtIndex"
         setUp: () ->

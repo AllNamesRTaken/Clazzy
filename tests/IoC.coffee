@@ -19,14 +19,32 @@ define [
         name: "SETUP"
         setUp: () ->
             #Arrange
-            Class "tests.SingelDummy"
-            Class "tests.NormalDummy"
+            Class "tests.SingelDummy", null, null, 
+                constructor: () ->
+                    @addModel
+                        a:null
+                        b:null
+                    this
+            Class "tests.NormalDummy", null, null, 
+                constructor: () ->
+                    @addModel
+                        a:null
+                        b:null
+                    this
             Class "tests.NormalDummyWithDeps", null, null, 
                 __dependencies: ["IHelper1"]
                 constructor: () ->
+                    @addModel
+                        a:null
+                        b:null
+                    this
             Class "tests.NormalDummyWithDepsInTemplate", null, null, 
                 __dependencies: []
                 constructor: () ->
+                    @addModel
+                        a:null
+                        b:null
+                    this
             ioc.setConfig "default"
             ioc.register "ISingelton", "tests.SingelDummy", true
             ioc.register "INormal", "tests.NormalDummy", false
@@ -68,7 +86,7 @@ define [
             ]
             deferred.then d.getTestCallback lang.hitch this, (data) -> 
                 #Assert
-                doh.assertEqual @values.a, data[0][1].a
+                doh.assertEqual @values.a, data[0][1].get("a")
                 doh.assertEqual "tests.SingelDummy", data[0][1].declaredClass
                 doh.assertTrue data[0][1] is data[1][1]
             d
@@ -86,7 +104,7 @@ define [
             ]
             deferred.then d.getTestCallback lang.hitch this, (data) -> 
                 #Assert
-                doh.assertEqual @values.a, data[0][1].a
+                doh.assertEqual @values.a, data[0][1].get("a")
                 doh.assertEqual "tests.NormalDummy", data[0][1].declaredClass
                 doh.assertTrue data[0][1] isnt data[1][1]
             d

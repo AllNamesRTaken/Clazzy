@@ -7,10 +7,20 @@ define [
     "clazzy/Clazzy"
     "clazzy/Deferred"
 ], (Class, _deferred) ->
-    'use strict'
 
     Class "clazzy.DeferredList", _deferred, null, 
+        constructor: () ->
+            try
+                caller = @constructor.caller?.caller?.caller
+                caller = caller.caller if not caller?.nom
+                @fname = caller?.nom or "unknown"
+                @cls = caller?.cls or "unknown"
+            catch err
+                console.warn "strict mode used in a function calling DeferredList"
+            this
+
         run: (list, fireOnOneCallback, fireOnOneErrback, consumeErrors = true, canceller) -> 
+            'use strict'
             resultList = []
             #Deferred.call(this);
             self = this
