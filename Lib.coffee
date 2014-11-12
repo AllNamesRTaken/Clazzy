@@ -1,7 +1,6 @@
 define [
     "clazzy/DeferredList" 
 ], (DeferredList) ->
-    'use strict'
 
     Lib = 
         deferList: (list, fireOnOneCallback, fireOnOneErrback, consumeErrors, canceller) -> 
@@ -9,6 +8,8 @@ define [
             dl.run(list, fireOnOneCallback, fireOnOneErrback, consumeErrors, canceller)
             dl
         findClass: (name) -> 
+            'use strict'
+            return null if not window
             parts = name.split "."
             cls = window
             for p in parts

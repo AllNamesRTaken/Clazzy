@@ -48,12 +48,12 @@ define [
 
         findSource: (targetName) ->
             return (value for name, value of @_sources) if not targetName
-            throw new Exception("RegisterException", targetName + " not registered") if not @_sources[targetName]?
+            (new Exception("RegisterException", targetName + " not registered")).Throw() if not @_sources[targetName]?
             @_sources[targetName]
 
         findTarget: (sourceName) ->
             return (value for name, value of @_targets) if not sourceName
-            throw new Exception("RegisterException", sourceName + " not registered") if not @_targets[sourceName]?
+            (new Exception("RegisterException", sourceName + " not registered")).Throw() if not @_targets[sourceName]?
             @_targets[sourceName]
         
         hasSource: (targetName) -> 

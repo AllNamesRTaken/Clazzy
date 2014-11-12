@@ -70,7 +70,7 @@ define [
             #Assert
             doh.assertEqual "tests.NormalDummy", result.classname
             doh.assertEqual @values, result.values
-        tearDown: () ->
+        tearDown: (t) ->
             ioc.getByClass = @originalGetByClass
     ,
         name: "getByClass_singeltonClassWithValues_singeltonInstance"
@@ -119,7 +119,7 @@ define [
             ioc.setConfig @configName
             #Assert
             doh.assertEqual @configName, ioc.getConfig()
-        tearDown: () ->
+        tearDown: (t) ->
             ioc.setConfig @originalConfigName
     ,
         name: "getByClass_ExistingNotRequiredClassWithNotRequiredDependencies_instanceWithDependencies"

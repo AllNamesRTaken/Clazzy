@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+	html {
+		height: 100%;
+	}
+	body {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		vertical-align: middle;
+		text-align: center;
+	}
+	.msg {
+		font-size: 100pt;
+	}
+	</style>
+</head>
+<body class="">
+	<div class="msg"> Check the console :) </div>
+	<script src="require.js"></script>
+	<script type="text/javascript" defer>
+		requirejs.config({
+	    baseUrl: '.',
+	    paths: {
+	        clazzy: '.',
+	        underscore: './underscore'
+	    }
+		});
+		require(["clazzy/IoC", "clazzy/Clazzy", "clazzy/Deferred"], function(IoC, Class, Deferred) {
+			Class("ns.Animal", null, ["IEatable"], {
+				constructor: function() {
+					this.addModel({
+						name: "General Animal Name"
+					});
+				},
+				eat:function(food){
+					console.log("trying to eat " + food.toString());
+				}, 
+				getEaten: function(by){
+					console.log("damn you " + by.toString());
+				}
+			});
+			Class("ns.Dog", ns.Animal, null, {
+				__dependencies: ["ITail"],
+				constructor: function() {
+					this.addModel({
+						mood: "angry"
+					});
+					this.watch("mood", function(prop, oldValue, newValue){
+						switch(newValue){
+							case "angry":
+								this.growl();
+								break;
+							case "happy":
+								this.ITail.wag();
+								break;								
+						}
+					});
+				},
+				eat:function(food){
+					this.inherited(); 
+					if(food.is("IEatable")){
+						food.getEaten(this);
+						this.set("mood", "happy")
+					} else {
+						console.log(food.toString() + " is not Eatable");
+					}
+				},
+				growl:function(){
+					console.log("GRRRRRR");
+				}
+			});
+			Class("ns.Tail", null, null, {
+				wag: function(){
+					console.log("SWOSH SWOSH");
+				}
+			});
+			Class("ns.Brick", null, null, {
+				
+			});
+			Class("ns.Person", null, null, {
+				constructor: function() {
+					this.addModel({
+						mood: "whatever"
+					});
+					this.watch("mood", function(prop, oldValue, newValue) {
+						switch(newValue){
+							case "angry":
+								console.log("WTF!");
+								break;
+							case "happy":
+								console.log("OOHHH CUUUTE!");
+								break;								
+						}						
+					});
+				}
+			});
+			Class("ns.Owner", ns.Person, null, {
+				__dependencies: ["IDog"],
+				constructor: function(){
+					this.convert("mood", function(prop, oldValue, newValue){
+						return "happy";
+					});
+					this.IDog.connect("mood", this, "mood");
+				}
+			});
+			IoC.register("IDog", "ns.Dog");
+			IoC.register("ITail", "ns.Tail");
+			IoC.register("IOwner", "ns.Owner");
+
+			window.animal = new ns.Animal();
+			window.brick = new ns.Brick();
+			window.randomPerson = new ns.Person();
+
+			IoC.get("IOwner").then(function(owner){
+				window.dog = owner.IDog;
+				dog.eat(brick);
+				dog.eat(animal);
+				console.log("Get the name of the dog: " + dog.get("name"));
+				console.log("No name changing for dogs!");
+				var def = new Deferred();
+				dog.lock("name", def);
+				console.log("changing name to Catmeister");
+				console.log("dogs name is still " + dog.set("name", "Catmeister"));
+				console.log("unlocking the name by resolving the promise")
+				def.resolve();
+				console.log("but putting a validator on it and a watch!")
+				dog.validate("name", function(prop, oldValue, newValue) { 
+					return newValue.toString().toLowerCase().indexOf("cat")>-1 ? 1 : 0;
+				});
+				dog.watch("name", function(prop, oldValue, newValue){
+					console.warn("someone is trying to set " + prop + " from " + oldValue + " to " + newValue);
+				})
+				console.log("Changing name to 'some cat' but the name remains " + dog.set("name", "some cat") + " so no need to trigger the watch!");
+				console.log("changing name to the proper dog name: "+dog.set("name", "Dogmeister"));
+
+				console.log("piss off the dog");
+				dog.set("mood", "angry");
+
+				console.log("connect the dogs mood to a normal person");
+				dog.connect("mood", randomPerson, "mood");
+
+				console.log("trigger anything connected to the dogs mood");
+				dog.trigger("mood");
+
+
+			});
+			window.IoC = IoC;
+
+			// all objects are global so that you may play around with them :)
+		});
+	</script>
+</body>
+</html>

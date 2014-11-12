@@ -6,6 +6,20 @@ define [
 ], (dojo, doh, declare, Exception) ->
 
     doh.register "clazzy.tests.Clazzy", [
+
+        name: "SETUP"
+        setUp: (t) ->
+            #Arrange
+            t.originalThrow = Exception.prototype.Throw
+            test = t
+            test.thrown = false
+            Exception.prototype.Throw = () ->
+                test.thrown = true
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+    ,
         name: "declare_onlyNameSpacedName_ableToNewDeclaredClass"
         setUp: () ->
             #Arrage
@@ -131,8 +145,11 @@ define [
         runTest: (t) ->
             @declare = declare
             #Act
+            @declare(@classname2, [@parentClass])
             #Assert
-            doh.assertError Exception, this, "declare", [@classname2, [@parentClass]]
+            doh.assertTrue(t.thrown)
+        tearDown: (t) ->
+            t.thrown = false
     ,
         name: "declare_interfacesIsntArray_throws"
         setUp: () ->
@@ -141,8 +158,11 @@ define [
         runTest: (t) ->
             @declare = declare
             #Act
+            @declare(@classname1, null, "someInterfaceName")
             #Assert
-            doh.assertError Exception, this, "declare", [@classname1, null, "someInterfaceName"]
+            doh.assertTrue(t.thrown)
+        tearDown: (t) ->
+            t.thrown = false
     ,
         name: "declare_nameSpacedNameInheritanceWithConstructors_constructorInheritance"
         setUp: () ->
@@ -181,8 +201,11 @@ define [
             @obj = new (declare "namespace.dummy", null, null, {})()
         runTest: (t) ->
             #Act
+            @obj.set("prop1", @propValue)
             #Assert
-            doh.assertError Exception, @obj, "set", ["prop1", @propValue]
+            doh.assertTrue(t.thrown)
+        tearDown: (t) ->
+            t.thrown = false
     ,
         name: "objectSetter_propertyNameAndObjectValue_setsValue"
         setUp: () ->
@@ -202,8 +225,11 @@ define [
             @obj = new (declare "namespace.dummy", null, null, {prop1: null})()
         runTest: (t) ->
             #Act
+            @obj.set("prop2", @propValue)
             #Assert
-            doh.assertError Exception, @obj, "set", ["prop2", @propValue]
+            doh.assertTrue(t.thrown)
+        tearDown: (t) ->
+            t.thrown = false
     ,
         name: "objectSetter_propertyNameAndObjectValue_setValueIsNotClone"
         setUp: () ->
@@ -306,7 +332,7 @@ define [
                     @watched = false
                     @oldValue = false
                     @newValue = false
-            )
+            )()
             @watchHandle = @monkey.watch 'food', (key, oldValue, newValue, index, self) ->
                 this.watched = true
                 this.oldValue = oldValue
@@ -318,7 +344,7 @@ define [
             doh.assertTrue @monkey.watched
             doh.assertEqual 'banana', @monkey.oldValue
             doh.assertEqual 'plum', @monkey.newValue
-        tearDown: () ->
+        tearDown: (t) ->
     ,
         name: "set_property_callsCatchAllWatchFunction"
         setUp: () ->
@@ -330,7 +356,7 @@ define [
                     @watched = false
                     @oldValue = false
                     @newValue = false
-            )
+            )()
             @watchHandle = @monkey.watch '*', (key, oldValue, newValue, index, self) ->
                 this.uberwatched = true
                 this.oldValue = oldValue
@@ -342,7 +368,7 @@ define [
             doh.assertTrue @monkey.uberwatched
             doh.assertEqual 'banana', @monkey.oldValue
             doh.assertEqual 'plum', @monkey.newValue
-        tearDown: () ->
+        tearDown: (t) ->
     ,
         name: "remove_watcherHandle_watcherIsNotInvokedByPropertyChange"
         setUp: () ->
@@ -354,7 +380,7 @@ define [
                     @watched = false
                     @oldValue = false
                     @newValue = false
-            )
+            )()
             @watchHandle = @monkey.watch 'food', (key, oldValue, newValue, index, self) ->
                 this.watched = true
                 this.oldValue = oldValue
@@ -367,7 +393,7 @@ define [
             doh.assertFalse @monkey.watched
             doh.assertFalse @monkey.oldValue
             doh.assertFalse @monkey.newValue
-        tearDown: () ->
+        tearDown: (t) ->
     ,
         name: "set_validatedProperty_callsValidatorFunction"
         setUp: () ->
@@ -379,7 +405,7 @@ define [
                     @validated = false
                     @oldValue = false
                     @newValue = false
-            )
+            )()
             @validateHandle = @monkey.validate 'food', (key, oldValue, newValue, index, self) ->
                 this.validated = true
                 this.oldValue = oldValue
@@ -392,7 +418,7 @@ define [
             doh.assertTrue @monkey.validated
             doh.assertEqual 'banana', @monkey.oldValue
             doh.assertEqual 'plum', @monkey.newValue
-        tearDown: () ->
+        tearDown: (t) ->
     ,
         name: "remove_validatorHandle_validatorIsNotInvokedByPropertyChange"
         setUp: () ->
@@ -404,7 +430,7 @@ define [
                     @validated = false
                     @oldValue = false
                     @newValue = false
-            )
+            )()
             @validateHandle = @monkey.validate 'food', (key, oldValue, newValue, index, self) ->
                 this.validated = true
                 this.oldValue = oldValue
@@ -418,7 +444,7 @@ define [
             doh.assertFalse @monkey.validated
             doh.assertFalse @monkey.oldValue
             doh.assertFalse @monkey.newValue
-        tearDown: () ->
+        tearDown: (t) ->
     ,
         name: "set_invalidatedProperty_propertyIsNotSet"
         setUp: () ->
@@ -427,7 +453,7 @@ define [
                 constructor: () ->
                     @name = "affe"
                     @food = "banana"
-            )
+            )()
             @validateHandle = @monkey.validate 'food', (key, oldValue, newValue, index, self) ->
                 1
         runTest: (t) ->
@@ -435,8 +461,145 @@ define [
             @monkey.set('food', 'plum')
             #Assert
             doh.assertEqual 'banana', @monkey.food
-        tearDown: () ->
+        tearDown: (t) ->
     ,
+        name: "addValidator_regexp_validatorWorks"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+            )()
+        runTest: (t) ->
+            #Act
+            @validateHandle = @monkey.addValidator 'food', /fikon/
+            @monkey.set('food', 'fikon')
+            @monkey.set('food', 'plum')
+            #Assert
+            doh.assertEqual 'fikon', @monkey.food
+        tearDown: (t) ->
+    ,
+        name: "lock_nameAndDeferred_locks"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+            )()
+            @deferred = 
+                addBoth: ()->
+        runTest: (t) ->
+            #Act
+            @monkey.lock "name", @deferred
+            @monkey.set "name", "olle"
+            #Assert
+            doh.assertEqual 'affe', @monkey.name
+        tearDown: (t) ->
+    ,
+        name: "unlock_lockedProp_unlocks"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+            )()
+        runTest: (t) ->
+            #Act
+            @monkey.lock "name"
+            @monkey.unlock "name"
+            @monkey.set "name", "olle"
+            #Assert
+            doh.assertEqual 'olle', @monkey.name
+        tearDown: (t) ->
+    ,
+        name: "set_connectedProperty_callsConnectedValidatorFunction"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+                    @validated = false
+                    @oldValue = false
+                    @newValue = false
+            )()
+            @handler = new (declare "namespace.MonkeyOwner", null, null, 
+                constructor: () ->
+                    @monkeyname = "affe"
+            )()
+            @handler.connect "monkeyname", @monkey, "name"
+            @validateHandle = @monkey.validate 'name', (key, oldValue, newValue, index, self) ->
+                this.validated = true
+                this.oldValue = oldValue
+                this.newValue = newValue
+                0
+        runTest: (t) ->
+            #Act
+            @handler.set('monkeyname', 'tiger')
+            #Assert
+            doh.assertTrue @monkey.validated
+            doh.assertEqual 'affe', @monkey.oldValue
+            doh.assertEqual 'tiger', @monkey.newValue
+        tearDown: (t) ->
+    ,
+        name: "remove_connectionHandle_validatorIsNotInvokedByPropertyChange"
+        setUp: () ->
+            #Arrage
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = "affe"
+                    @food = "banana"
+                    @validated = false
+                    @oldValue = false
+                    @newValue = false
+            )()
+            @handler = new (declare "namespace.MonkeyOwner", null, null, 
+                constructor: () ->
+                    @monkeyname = "affe"
+            )()
+            @handler.connect "monkeyname", @monkey, "name"
+            @validateHandle = @monkey.validate 'name', (key, oldValue, newValue, index, self) ->
+                this.validated = true
+                this.oldValue = oldValue
+                this.newValue = newValue
+                0
+            @validateHandle.remove()
+        runTest: (t) ->
+            #Act
+            @handler.set('monkeyname', 'tiger')
+            #Assert
+            doh.assertFalse @monkey.validated
+            doh.assertFalse @monkey.oldValue
+            doh.assertFalse @monkey.newValue
+        tearDown: (t) ->
+    ,
+        name: "set_invalidatedConnectedProperty_propertyIsNotSet"
+        setUp: () ->
+            #Arrage
+            @originalMonkeyName = oName = "affe"
+            @monkey = new (declare "namespace.Monkey", null, null, 
+                constructor: () ->
+                    @name = oName
+                    @food = "banana"
+            )()
+            @handler = new (declare "namespace.MonkeyOwner", null, null, 
+                constructor: () ->
+                    @monkeyname = oName
+            )()
+            @handler.connect "monkeyname", @monkey, "name"
+            @validateHandle = @monkey.validate 'name', (key, oldValue, newValue, index, self) ->
+                1
+        runTest: (t) ->
+            #Act
+            @handler.set('monkeyname', 'tiger')
+            #Assert
+            doh.assertEqual @originalMonkeyName, @monkey.name
+        tearDown: (t) ->
+    ,
+
         name: "inherited_unexisting_throws"
         setUp: () ->
             #Arrage
@@ -444,12 +607,14 @@ define [
                 constructor: () ->
                 eat: (food) ->
                     food
-            )
+            )()
         runTest: (t) ->
             #Act
+            @monkey.inherited("eat", "namespace.Monkey", ["banana"])
             #Assert
-            doh.assertError Exception, @monkey, "inherited", ["eat", "namespace.Monkey", ["banana"]]
-        tearDown: () ->
+            doh.assertTrue(t.thrown)
+        tearDown: (t) ->
+            t.thrown = false
     ,
         name: "inherited_existing_inheritedCalled"
         setUp: () ->
@@ -462,11 +627,21 @@ define [
                 constructor: () ->
                 eat: (food) ->
                     @inherited()
-            )
+            )()
         runTest: (t) ->
             #Act
             eaten = @baboon.eat('banana')
             #Assert
             doh.assertEqual 'banana', eaten
-        tearDown: () ->
+        tearDown: (t) ->
+    ,
+        name: "TEARDOWN"
+        setUp: () ->
+            #Arrange
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+        tearDown: (t) ->
+            Exception.prototype.Throw = t.originalThrow
     ]

@@ -7,6 +7,19 @@ define [
 
     doh.register "clazzy.tests.namelocators.TemplateNameLocator", [
 
+        name: "SETUP"
+        setUp: (t) ->
+            #Arrange
+            t.originalThrow = Exception.prototype.Throw
+            test = t
+            test.Thrown = false
+            Exception.prototype.Throw = () ->
+                test.Thrown = true
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+    ,
         name: "getConfig_null_configName"
         setUp: () ->
             #Arrange
@@ -27,7 +40,7 @@ define [
             config = templateNameLocator.getConfig()
             #Assert
             doh.assertEqual(@configName, config)
-        tearDown: () -> 
+        tearDown: (t) -> 
             templateNameLocator.setConfigTo "default"
     ,
         name: "configExists_existingConfig_true"
@@ -38,7 +51,7 @@ define [
             #Act
             #Assert
             doh.assertTrue templateNameLocator.configExists @configName
-        tearDown: () -> 
+        tearDown: (t) -> 
     ,
         name: "configExists_notExistingConfig_true"
         setUp: () ->
@@ -48,7 +61,7 @@ define [
             #Act
             #Assert
             doh.assertFalse templateNameLocator.configExists @configName
-        tearDown: () -> 
+        tearDown: (t) -> 
     ,
         name: "configIsEmpty_emptyConfig_true"
         setUp: () ->
@@ -58,7 +71,7 @@ define [
             empty = templateNameLocator.configIsEmpty("default")
             #Assert
             doh.assertTrue empty
-        tearDown: () ->
+        tearDown: (t) ->
     ,
         name: "configIsEmpty_nonEmptyConfig_false"
         setUp: () ->
@@ -69,7 +82,7 @@ define [
             empty = templateNameLocator.configIsEmpty("default")
             #Assert
             doh.assertFalse empty
-        tearDown: () ->
+        tearDown: (t) ->
             templateNameLocator.clear()
     ,     
         name: "register_newTemplateNameAndClassName_noError"
@@ -82,7 +95,7 @@ define [
             templateNameLocator.register(@templateName, @className)
             #Assert
             doh.assertTrue true
-        tearDown: () ->
+        tearDown: (t) ->
             templateNameLocator.clear()
     ,
         name: "findTemplate_className_found"
@@ -96,7 +109,7 @@ define [
             template = templateNameLocator.findTemplate @className
             #Assert
             doh.assertEqual(@templateName, template)
-        tearDown: () ->
+        tearDown: (t) ->
             templateNameLocator.clear()
     ,
         name: "findTemplate_notExisting_throws"
@@ -106,10 +119,12 @@ define [
             @className = "myClass"
         runTest: (t) -> 
             #Act
+            templateNameLocator.findTemplate(@className)
             #Assert
-            doh.assertError(Exception, templateNameLocator, "findTemplate", [@className])
-        tearDown: () ->
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
             templateNameLocator.clear()
+            t.Thrown = false
     ,
         name: "findClass_templateName_found"
         setUp: () ->
@@ -122,7 +137,7 @@ define [
             name = templateNameLocator.findClass @templateName
             #Assert
             doh.assertEqual(@className, name)
-        tearDown: () ->
+        tearDown: (t) ->
             templateNameLocator.clear()
     ,
         name: "findClass_notExisting_found"
@@ -132,10 +147,12 @@ define [
             @className = "myClass"
         runTest: (t) -> 
             #Act
+            templateNameLocator.findClass(@templateName)
             #Assert
-            doh.assertError(Exception, templateNameLocator, "findClass", [@templateName])
-        tearDown: () ->
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
             templateNameLocator.clear()
+            t.Thrown = false
     ,
         name: "clear_null_configIsCleared"
         setUp: () ->
@@ -146,8 +163,11 @@ define [
         runTest: (t) -> 
             #Act
             templateNameLocator.clear()
+            templateNameLocator.findTemplate(@className)
             #Assert
-            doh.assertError(Exception, templateNameLocator, "findTemplate", [@className])
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
     ,
         name: "clear_all_allConfigsAreCleared"
         setUp: () ->
@@ -163,9 +183,14 @@ define [
             templateNameLocator.clear(all=true)
             #Assert
             templateNameLocator.setConfigTo @config1
-            doh.assertError(Exception, templateNameLocator, "findTemplate", [@className])
+            templateNameLocator.findTemplate(@className)
+            doh.assertTrue(t.Thrown)
+            t.Thrown = false
             templateNameLocator.setConfigTo @config2
-            doh.assertError(Exception, templateNameLocator, "findTemplate", [@className])
+            templateNameLocator.findTemplate(@className)
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
     ,
         name: "hasTemplate_notRegisteredTemplateName_false"
         setUp: () ->
@@ -176,7 +201,7 @@ define [
             exits = templateNameLocator.hasTemplate(@className)
             #Assert
             doh.assertFalse exits
-        tearDown: () ->
+        tearDown: (t) ->
             templateNameLocator.clear()
     ,
         name: "hasTemplate_registeredTemplateName_true"
@@ -190,6 +215,16 @@ define [
             exits = templateNameLocator.hasTemplate(@className)
             #Assert
             doh.assertTrue exits
-        tearDown: () ->
+        tearDown: (t) ->
             templateNameLocator.clear()
+    ,
+        name: "TEARDOWN"
+        setUp: () ->
+            #Arrange
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+        tearDown: (t) ->
+            Exception.prototype.Throw = t.originalThrow
     ]

@@ -15,12 +15,8 @@ define [
             func.apply(that, arguments || [])
 
     # A deferred provides an API for creating and resolving a promise.
-    Deferred = Class "clazzy.Deferred", null, null
+    Deferred = Class "clazzy.Deferred", null, null, 
         constructor: () ->
-            S4 = () ->
-                (((1+Math.random())*0x10000)|0).toString(16).substring(1)
-            @guid = (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4())
-            @id =  
             @canceller
             @result
             @finished
@@ -45,7 +41,9 @@ define [
 
         complete: (value) -> 
             'use strict'
-            throw new Exception("DeferredException", "This deferred has already been resolved.") if @finished
+            if @finished
+                console.log "Deferred created in class: "+this.cls+" and function: "+this.fname
+                return (new Exception("DeferredException", "This deferred has already been resolved.")).Throw() 
             @result = value
             @finished = true
             @notify()
@@ -72,8 +70,9 @@ define [
 
                         listener.deferred[if unchanged and @isError then "reject" else "resolve"](if unchanged then @result else newResult)
                     catch e
-                        console.warn e
-                        console.warn this
+                        console.error e
+                        console.log "Deferred created in class: "+this.cls+" and function: "+this.fname
+                        console.log e.func if e.func?
                         listener.deferred.reject e
                 else
                     if @isError
@@ -146,6 +145,7 @@ define [
                         error = new Exception("DeferredCancelError", error)
                     error.log = false
                     @deferred.reject error
+            undefined
 
         addCallback: (callback) ->
             'use strict'

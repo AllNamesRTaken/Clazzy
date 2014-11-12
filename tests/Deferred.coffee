@@ -7,6 +7,19 @@ define [
 
     doh.register "clazzy.tests.Deferred", [
 
+        name: "SETUP"
+        setUp: (t) ->
+            #Arrange
+            t.originalThrow = Exception.prototype.Throw
+            test = t
+            test.thrown = false
+            Exception.prototype.Throw = () ->
+                test.thrown = true
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+    ,
         name: "resolve_data_callbackIsCalledWithData"
         setUp: () ->
             #Arrange
@@ -99,7 +112,7 @@ define [
             #Assert
             doh.assertEqual 1, result[0]()
             doh.assertTrue not result[1]
-        tearDown: () -> 
+        tearDown: (t) -> 
             @deferred.addCallbacks = @originalAddCallbacks
     ,
         name: "addErrback_errback_CalladdCallbacksWithfalsyAndErrback"
@@ -116,7 +129,7 @@ define [
             #Assert
             doh.assertEqual 2, result[1]()
             doh.assertTrue not result[0]
-        tearDown: () -> 
+        tearDown: (t) -> 
             @deferred.addCallbacks = @originalAddCallbacks
     ,
         name: "addBoth_callbackAndErrback_CalladdCallbacksWithCallbackEqualsErrback"
@@ -133,7 +146,7 @@ define [
             #Assert
             doh.assertEqual 1, result[0]()
             doh.assertEqual result[0], result[1]
-        tearDown: () -> 
+        tearDown: (t) -> 
             @deferred.addCallbacks = @originalAddCallbacks
     ,
         name: "addCallbacks_callbackAndErrback_callingThen"
@@ -150,7 +163,7 @@ define [
             @deferred.addCallbacks @callback, @errback
             doh.assertEqual 1, @deferred.result[0]()
             doh.assertEqual 2, @deferred.result[1]()
-        tearDown: () -> 
+        tearDown: (t) -> 
             @deferred.then = @originalThen
     ,
         name: "resolveTwice_data_throws"
@@ -162,8 +175,18 @@ define [
             @deferred.then (data) -> 
                 false
             @deferred.resolve(1)
-            try
-                @deferred.resolve(1)
-            catch e
-                doh.assertTrue e instanceof Exception
+            @deferred.resolve(1)
+            doh.assertTrue t.thrown
+        tearDown: (t) ->
+            t.thrown = false
+    ,
+        name: "TEARDOWN"
+        setUp: () ->
+            #Arrange
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+        tearDown: (t) ->
+            Exception.prototype.Throw = t.originalThrow
     ]

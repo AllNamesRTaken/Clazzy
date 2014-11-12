@@ -7,6 +7,19 @@ define [
 
     doh.register "clazzy.tests.namelocators.InterfaceNameLocators", [
 
+        name: "SETUP"
+        setUp: (t) ->
+            #Arrange
+            t.originalThrow = Exception.prototype.Throw
+            test = t
+            test.Thrown = false
+            Exception.prototype.Throw = () ->
+                test.Thrown = true
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true 
+    ,
         name: "getConfig_null_configName"
         setUp: () ->
             #Arrange
@@ -27,7 +40,7 @@ define [
             config = interfaceNameLocator.getConfig()
             #Assert
             doh.assertEqual(@configName, config)
-        tearDown: () -> 
+        tearDown: (t) -> 
             interfaceNameLocator.setConfigTo "default"
     ,
         name: "register_newInterfaceNameAndClassName_noError"
@@ -40,7 +53,7 @@ define [
             interfaceNameLocator.register(@interfaceName, @className)
             #Assert
             doh.assertTrue true
-        tearDown: () ->
+        tearDown: (t) ->
             interfaceNameLocator.clear()
     ,
         name: "findInterface_className_found"
@@ -54,20 +67,22 @@ define [
             interfejs = interfaceNameLocator.findInterface @className
             #Assert
             doh.assertEqual(@interfaceName, interfejs)
-        tearDown: () ->
+        tearDown: (t) ->
             interfaceNameLocator.clear()
     ,
         name: "findInterface_notExisting_throws"
-        setUp: () ->
+        setUp: (t) ->
             #Arrange
             @interfaceName = "myInterface"
             @className = "myClass"
         runTest: (t) -> 
             #Act
+            interfaceNameLocator.findInterface(@className)
             #Assert
-            doh.assertError(Exception, interfaceNameLocator, "findInterface", [@className])
-        tearDown: () ->
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
             interfaceNameLocator.clear()
+            t.Thrown = false
     ,
         name: "findClass_interfaceName_found"
         setUp: () ->
@@ -80,7 +95,7 @@ define [
             name = interfaceNameLocator.findClass @interfaceName
             #Assert
             doh.assertEqual(@className, name)
-        tearDown: () ->
+        tearDown: (t) ->
             interfaceNameLocator.clear()
     ,
         name: "findClass_notExisting_found"
@@ -90,10 +105,12 @@ define [
             @className = "myClass"
         runTest: (t) -> 
             #Act
+            interfaceNameLocator.findClass(@interfaceName)
             #Assert
-            doh.assertError(Exception, interfaceNameLocator, "findClass", [@interfaceName])
-        tearDown: () ->
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
             interfaceNameLocator.clear()
+            t.Thrown = false
     ,
         name: "clear_null_configIsCleared"
         setUp: () ->
@@ -104,8 +121,11 @@ define [
         runTest: (t) -> 
             #Act
             interfaceNameLocator.clear()
+            interfaceNameLocator.findInterface(@className)
             #Assert
-            doh.assertError(Exception, interfaceNameLocator, "findInterface", [@className])
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
     ,
         name: "clear_all_allConfigsAreCleared"
         setUp: () ->
@@ -120,10 +140,15 @@ define [
             #Act
             interfaceNameLocator.clear(all=true)
             #Assert
-            interfaceNameLocator.setConfigTo @config1
-            doh.assertError(Exception, interfaceNameLocator, "findInterface", [@className])
-            interfaceNameLocator.setConfigTo @config2
-            doh.assertError(Exception, interfaceNameLocator, "findInterface", [@className])
+            interfaceNameLocator.setConfigTo(@config1)
+            interfaceNameLocator.findInterface(@className)
+            doh.assertTrue(t.Thrown)
+            t.Thrown = false
+            interfaceNameLocator.setConfigTo(@config2)
+            interfaceNameLocator.findInterface(@className)
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
     ,
         name: "hasClass_notRegisteredInterfaceName_false"
         setUp: () ->
@@ -134,7 +159,7 @@ define [
             exits = interfaceNameLocator.hasClass(@interfaceName)
             #Assert
             doh.assertFalse exits
-        tearDown: () ->
+        tearDown: (t) ->
             interfaceNameLocator.clear()
     ,
         name: "hasClass_registeredInterfaceName_true"
@@ -148,6 +173,16 @@ define [
             exits = interfaceNameLocator.hasClass(@interfaceName)
             #Assert
             doh.assertTrue exits
-        tearDown: () ->
+        tearDown: (t) ->
             interfaceNameLocator.clear()
+    ,
+        name: "TEARDOWN"
+        setUp: () ->
+            #Arrange
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+        tearDown: (t) ->
+            Exception.prototype.Throw = t.originalThrow
     ]

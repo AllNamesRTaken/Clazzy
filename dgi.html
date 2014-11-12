@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<style>
+	.rainbow1 {
+		background: #ff3232; /* Old browsers */
+background: -moz-linear-gradient(left, #ff3232 0%, #ffff32 21%, #45ff30 40%, #28fffb 57%, #283aff 72%, #f428ff 86%, #ff0004 100%); /* FF3.6+ */
+background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ff3232), color-stop(21%,#ffff32), color-stop(40%,#45ff30), color-stop(57%,#28fffb), color-stop(72%,#283aff), color-stop(86%,#f428ff), color-stop(100%,#ff0004)); /* Chrome,Safari4+ */
+background: -webkit-linear-gradient(left, #ff3232 0%,#ffff32 21%,#45ff30 40%,#28fffb 57%,#283aff 72%,#f428ff 86%,#ff0004 100%); /* Chrome10+,Safari5.1+ */
+background: -o-linear-gradient(left, #ff3232 0%,#ffff32 21%,#45ff30 40%,#28fffb 57%,#283aff 72%,#f428ff 86%,#ff0004 100%); /* Opera 11.10+ */
+background: -ms-linear-gradient(left, #ff3232 0%,#ffff32 21%,#45ff30 40%,#28fffb 57%,#283aff 72%,#f428ff 86%,#ff0004 100%); /* IE10+ */
+background: linear-gradient(to right, #ff3232 0%,#ffff32 21%,#45ff30 40%,#28fffb 57%,#283aff 72%,#f428ff 86%,#ff0004 100%); /* W3C */
+filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff3232', endColorstr='#ff0004',GradientType=1 ); /* IE6-9 */
+	}
+
+	html {
+		height: 100%;
+	}
+	body {
+		width: 100%;
+		height: 100%;
+		position: relative;
+		vertical-align: middle;
+		text-align: center;
+
+		overflow: visible !important;
+	    -webkit-transform-style: preserve-3d;
+	    transform-style: preserve-3d;
+    	-webkit-transform: perspective(1000px);
+    	transform: perspective(1000px);
+    	-webkit-transform-origin: 50% 50%;
+    	transform-origin: 50% 50%;
+	}
+	.huge {
+		font-size: 120pt;
+		font-weight: bold;
+	}
+	.msg {
+		margin-top: 100px;
+		display: block;
+		position: absolute;
+		-webkit-background-clip: text;
+  		-webkit-text-fill-color: transparent;
+  		text-align: center;
+    	vertical-align: middle;
+	}
+	</style>
+<audio src="http://www.amigaremix.com/listen/2754/gibs%20-%20Xenon%20-%20The%20Real%20ExaBlast.mp3" autoplay>
+  Your browser does not support the <code>audio</code> element.
+</audio>
+</head>
+<body class="">
+	<span class="msg huge rainbow1"></span>
+	<script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+	<script src="require.js"></script>
+
+	<script type="text/javascript" async defer>
+		require(["clazzy/Clazzy"], function(util) {
+		});
+		$('.msg').html("I was tired!!1");
+		var objWidth = $('.msg').width();
+		var objHeight = $('.msg').height();
+		var animateBackground = function(what, looptime, controller) {
+			var looptimeSec = looptime/1000;
+				setTimeout(function() {
+					what.css({
+						transition: "background-position "+looptimeSec+"s linear, -webkit-transform "+looptimeSec+"s linear", 
+						backgroundPosition: objWidth + "px",
+						transform: "rotateY( 360deg )"
+				});});
+				if (!controller) controller = {};
+				controller.loop = setInterval(function() {
+					console.log(Date.now());
+					what.css({
+						transition: "none", 
+						backgroundPosition: "0",
+						transform: "rotateY( 0deg )"
+					});
+					setTimeout(function() {what.css({
+						transition: "background-position "+looptimeSec+"s linear, -webkit-transform "+looptimeSec+"s linear", 
+						backgroundPosition: objWidth + "px",
+						transform: "rotateY( 360deg )"
+					});});
+				}, looptime);
+		}
+		var ctrl = {};
+		animateBackground($('.msg'), 4000, ctrl);
+
+	</script>
+</body>
+</html>

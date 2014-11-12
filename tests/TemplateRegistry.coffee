@@ -7,6 +7,19 @@ define [
 
     doh.register "clazzy.TemplateRegistry", [
 
+        name: "SETUP"
+        setUp: (t) ->
+            #Arrange
+            t.originalThrow = Exception.prototype.Throw
+            test = t
+            test.Thrown = false
+            Exception.prototype.Throw = () ->
+                test.Thrown = true
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+    ,
         name: "get_registeredTemplateId_templateString"
         setUp: () ->
             #Arrange
@@ -23,9 +36,11 @@ define [
             #Arrange
         runTest: (t) -> 
             #Act
+            templateRegistry.get(null)
             #Assert
-            doh.assertError Exception, templateRegistry, "get", [null]
-        tearDown: () -> 
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
     ,
         name: "get_notRegisteredTemplateId_defaultTemplateString"
         setUp: () ->
@@ -46,21 +61,46 @@ define [
             #Assert
             doh.assertEqual "someNewName", templateRegistry.config
     ,
+        name: "setConfigTo_nonStringConfigname_throws"
+        setUp: () ->
+            #Arrange
+        runTest: (t) -> 
+            #Act
+            templateRegistry.setConfigTo 0
+            #Assert
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
+    ,
         name: "register_nullTemplateId_throws"
         setUp: () ->
             #Arrange
         runTest: (t) -> 
             #Act
+            templateRegistry.register(null)
             #Assert
-            doh.assertError Exception, templateRegistry, "register", [null]
-        tearDown: () -> 
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
     ,
         name: "Register_nullTemplateString_throws"
         setUp: () ->
             #Arrange
         runTest: (t) -> 
             #Act
+            templateRegistry.register("valid", null)
             #Assert
-            doh.assertError Exception, templateRegistry, "register", ["valid", null]
-        tearDown: () -> 
+            doh.assertTrue(t.Thrown)
+        tearDown: (t) ->
+            t.Thrown = false
+    ,
+        name: "TEARDOWN"
+        setUp: () ->
+            #Arrange
+        runTest: () -> 
+            #Act
+            #Assert
+            doh.assertTrue true
+        tearDown: (t) ->
+            Exception.prototype.Throw = t.originalThrow
     ]

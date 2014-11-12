@@ -9,4 +9,5 @@ define [
 	"clazzy/tests/IoC"
 	"clazzy/tests/Lib"	
 	"clazzy/tests/TemplateRegistry"	
+	"clazzy/tests/When"	
 ], 1
