@@ -312,6 +312,10 @@
         _depreplaces = _alldepreplaces[config];
         _required = _allrequired[config];
         return null;
+      },
+      registerTemplate: function(templateid, classname, templatestring, config) {
+        tLocator.register(templateid, classname, config);
+        return tRegistry.register(templateid, templatestring, config);
       }
     }))();
     return ioc;

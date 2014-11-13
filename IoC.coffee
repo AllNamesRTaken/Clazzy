@@ -230,5 +230,10 @@ define [
             _depreplaces = _alldepreplaces[config]
             _required = _allrequired[config]
             null
+
+        registerTemplate: (templateid, classname, templatestring, config) ->
+            tLocator.register templateid, classname, config
+            tRegistry.register templateid, templatestring, config 
+
     )()
     ioc
